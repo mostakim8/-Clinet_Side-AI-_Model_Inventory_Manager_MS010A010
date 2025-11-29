@@ -1,250 +1,385 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../providers/AuthProvider'; 
-import { getAuth } from "firebase/auth"; 
-import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../providers/AuthProvider.jsx'; 
+import { getAuth } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 const SERVER_BASE_URL = 'http://localhost:5001';
 
-const ModelDetails = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const { user } = useAuth();
-    const auth = getAuth();
-    // ⚠️ IMPORTANT: db instance must be initialized after firebase init, which happens implicitly here.
-    const db = getFirestore(); 
+// Mock Data Fallback
+const MOCK_MODEL = {
+    _id: "60f71c4c8e7e1c0c8e7e1c0c",
+    modelName: "Mock AI Data Model (Fallback)",
+    description: "This is a placeholder model to allow UI testing of the purchase button when the backend server is not reachable. The purchase attempt will still try to contact the server.",
+    price: 9.99,
+    category: "Data Analysis",
+    developerEmail: "mock.developer@example.com",
+    purchased: 42,
+    imageUrl: "https://placehold.co/800x600/60A5FA/ffffff?text=MOCK+DATA",
+};
 
-    const [model, setModel] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [isPurchased, setIsPurchased] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // Global App ID for Firestore path (MANDATORY)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const userId = auth.currentUser?.uid || 'anonymous';
-    // Firestore path for user's private purchase history
-    const purchasesCollectionPath = `artifacts/${appId}/users/${userId}/purchases`;
-
-    // --- Toast & Utility Functions ---
-    const showToast = (message, type) => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
-    };
-
-    const ToastNotification = () => {
-        if (!toast.show) return null;
-        const colorClass = toast.type === 'success' 
-            ? 'bg-green-500' 
-            : toast.type === 'info' 
-                ? 'bg-blue-500'
-                : 'bg-red-500';
-
-        return (
-            <div className="toast toast-end z-50">
-                <div className={`alert ${colorClass} text-white transition duration-300 shadow-xl`}>
-                    <span>{toast.message}</span>
-                </div>
-            </div>
-        );
-    };
-
-    // --- 1. Fetch Model Data ---
-    useEffect(() => {
-        if (!id) {
-            setLoading(false);
-            return;
-        }
-
-        // Fetch model details
-        fetch(`${SERVER_BASE_URL}/models/${id}`)
-            .then(res => {
-                if (!res.ok) throw new Error('Model not found or network error.');
-                return res.json();
-            })
-            .then(data => {
-                setModel(data);
-                setLoading(false);
-                // Check if the user has already purchased this model (runs after model data is set)
-                if (user?.uid) {
-                    checkPurchaseStatus(data._id);
-                }
-            })
-            .catch(error => {
-                console.error("Fetch Error:", error);
-                showToast(`Failed to load model details: ${error.message}`, 'error');
-                setLoading(false);
-            });
-    }, [id, user?.uid]); // Reload if ID or user changes
-
-    // --- 2. Check Purchase Status using Firestore (Task 8 related) ---
-    const checkPurchaseStatus = async (modelId) => {
-        if (!userId || userId === 'anonymous') return;
-
-        try {
-            // Querying the user's private purchase collection
-            const q = query(
-                collection(db, purchasesCollectionPath),
-                where('modelId', '==', modelId),
-                where('buyerId', '==', userId)
-            );
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                setIsPurchased(true);
-            }
-        } catch (e) {
-            console.error("Error checking purchase status:", e);
-            // This error is non-critical for viewing the page
-        }
-    };
-
-    // --- 3. Handle Purchase Logic (CRITICAL FIX) ---
-    const handlePurchase = async () => {
-        if (!user) {
-            showToast('Please log in to purchase this model.', 'info');
-            return;
-        }
-
-        if (isPurchased) {
-            showToast('You already own this model.', 'info');
-            return;
-        }
-
-        setIsProcessing(true);
-
-        const purchaseData = {
-            modelId: model._id,
-            modelName: model.modelName,
-            price: model.price,
-            developerEmail: model.developerEmail,
-            buyerEmail: user.email,
-            buyerId: userId,
-            category: model.category, // Include category for history display
-            purchaseDate: new Date().toISOString(),
-        };
-
-        try {
-            // Get Firebase Token for server authentication
-            const token = await user.getIdToken();
-            
-            // 1. Record the transaction in Firestore (Private History)
-            const purchaseRef = doc(db, purchasesCollectionPath, `${model._id}-${userId}`);
-            await setDoc(purchaseRef, purchaseData);
-            
-            // 2. CRITICAL FIX: Update Server-Side Purchase Counter (Public Count)
-            // Call the PATCH endpoint to increment the 'purchased' field
-            const res = await fetch(`${SERVER_BASE_URL}/models/purchase/${model._id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}` 
-                }
-            });
-
-            if (!res.ok) {
-                 // Log a warning if the public count update fails, but proceed since the private record is saved
-                console.warn(`Server purchase count update failed with status ${res.status}.`);
-            }
-
-            setIsPurchased(true);
-            showToast(`Purchase successful! You now own ${model.modelName}.`, 'success');
-            
-        } catch (e) {
-            console.error("Purchase Error:", e);
-            showToast(`Transaction failed. Details: ${e.message || 'Check network connection.'}`, 'error');
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    // --- Render Logic ---
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-        );
-    }
-
-    if (!model) {
-        return <div className="text-center py-20 text-3xl text-error">Model not found.</div>;
-    }
-
-    // Determine button state and text
-    const buttonText = isPurchased ? 'Owned' : 'Buy Now';
-    const buttonClass = isPurchased 
-        ? 'btn-success cursor-not-allowed' 
-        : 'btn-primary hover:bg-primary-focus';
-
+// --- Custom Toast Component ---
+const ToastNotification = ({ show, message, type, onClose }) => {
+    if (!show) return null;
+    const colorClass = type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-success';
+    
     return (
-        <div className="max-w-4xl mx-auto py-10 px-4">
-            <ToastNotification />
-            
-            {/* Header and Back Button */}
-            <button onClick={() => navigate('/')} className="btn btn-ghost mb-6 text-primary">
-                ← Back to Home
-            </button>
-
-            <div className="bg-base-200 p-8 rounded-2xl shadow-2xl flex flex-col lg:flex-row gap-8">
-                {/* Left Side: Image */}
-                <div className="flex-shrink-0 lg:w-1/3">
-                    <img
-                        src={model.imageUrl || 'https://placehold.co/400x300/F3F4F6/9CA3AF?text=AI+Model'}
-                        alt={model.modelName}
-                        className="w-full h-auto object-cover rounded-xl shadow-lg aspect-square"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://placehold.co/400x300/F3F4F6/9CA3AF?text=AI+Model';
-                        }}
-                    />
+        <div className="toast toast-top toast-center z-[100]">
+            <div className={`alert ${colorClass} shadow-lg text-white`}>
+                <div>
+                    <span className='font-semibold'>{message}</span>
                 </div>
-
-                {/* Right Side: Details and Action */}
-                <div className="flex-grow lg:w-2/3">
-                    <h1 className="text-5xl font-extrabold text-secondary mb-3">{model.modelName}</h1>
-                    <p className="text-xl font-medium text-gray-600 mb-6">{model.category}</p>
-
-                    <div className="divider"></div>
-                    
-                    {/* Price and Action */}
-                    <div className="flex justify-between items-center mb-6 border-b pb-4">
-                        <span className="text-4xl font-bold text-primary">
-                            ${model.price.toFixed(2)}
-                        </span>
-                        
-                        {/* Buy Button (Task 8 & Purchase Counter) */}
-                        <button
-                            onClick={handlePurchase}
-                            className={`btn btn-lg ${buttonClass} text-white transition duration-300`}
-                            disabled={isProcessing || isPurchased || !user}
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <span className="loading loading-spinner"></span>
-                                    Processing...
-                                </>
-                            ) : (
-                                buttonText
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Description */}
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-semibold mb-3 text-secondary">Description</h2>
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{model.description}</p>
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="text-sm text-gray-500 border-t pt-4">
-                        <p><strong>Developer:</strong> {model.developerEmail}</p>
-                        <p><strong>Model ID:</strong> {model._id}</p>
-                        <p><strong>Total Purchases:</strong> <span className='font-bold text-secondary'>{model.purchased || 0}</span></p> 
-                    </div>
-                </div>
+                <button onClick={onClose} className="btn btn-sm btn-ghost ml-4">✕</button>
             </div>
         </div>
     );
 };
+// --- End Toast Component ---
 
-export default ModelDetails;
+// Inline SVG for Checkmark
+const CheckCircleIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+);
+
+// ✅ FIX: Component-ti ekhon default export-er bodole named export hishebe export kora hoyeche.
+export const ModelDetails = () => {
+    const { id } = useParams();
+    const { user, isLoading: isAuthLoading } = useAuth(); 
+    const navigate = useNavigate();
+
+    const isLoggedIn = !!user;
+
+    // Firebase setup
+    const auth = getAuth();
+    const db = getFirestore();
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    const [model, setModel] = useState(null);
+    const [isModelLoading, setIsModelLoading] = useState(true); 
+    const [error, setError] = useState(null);
+    const [isPurchasing, setIsPurchasing] = useState(false);
+    const [hasPurchased, setHasPurchased] = useState(false); 
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    const showToast = (message, type) => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message, type }), 4000);
+    };
+
+    // Purchase Status Check Logic (Firestore)
+    const checkPurchaseStatus = async (modelId, buyerEmail) => {
+        const userId = auth.currentUser?.uid; 
+        if (!userId) {
+            setHasPurchased(false);
+            return;
+        }
+
+        // Firestore Path for Private User Purchases
+        // /artifacts/{appId}/users/{userId}/purchases
+        const purchasesRef = collection(db, `artifacts/${appId}/users/${userId}/purchases`);
+        
+        try {
+            const q = query(
+                purchasesRef,
+                where('modelId', '==', modelId),
+                where('buyerEmail', '==', buyerEmail)
+            );
+            
+            const querySnapshot = await getDocs(q);
+            setHasPurchased(!querySnapshot.empty);
+        } catch (error) {
+            console.error("Error checking purchase status:", error);
+            setHasPurchased(false); 
+        }
+    };
+    
+    // --- 1. Data Fetching Effect (Model data) ---
+    useEffect(() => {
+        setIsModelLoading(true);
+        setError(null);
+
+        fetch(`${SERVER_BASE_URL}/models/${id}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Model could not be found or server error.');
+                return res.json();
+            })
+            .then(data => {
+                setModel(data);
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                setModel(MOCK_MODEL); 
+                setError(`Warning: Could not fetch live data from server. Displaying mock model. (${err.message})`);
+            })
+            .finally(() => {
+                setIsModelLoading(false); 
+            });
+            
+    }, [id]); 
+
+    // --- 2. Purchase Check Effect (Depends on Model data and Auth status) ---
+    useEffect(() => {
+        if (!isModelLoading && model && !isAuthLoading && isLoggedIn && user?.email) {
+             checkPurchaseStatus(model._id, user.email);
+        } else if (!isModelLoading && model) {
+             setHasPurchased(false);
+        }
+    }, [isModelLoading, model, isAuthLoading, isLoggedIn, user?.email]); 
+
+
+    // --- 3. Secure Purchase Transaction Logic ---
+    const handlePurchase = async () => {
+        if (!model) {
+            showToast('Model data is still loading or unavailable. Please try again.', 'warning');
+            return;
+        }
+
+        if (!isLoggedIn) {
+            showToast('Authentication failed. Please log in again.', 'error');
+            setTimeout(() => navigate('/login'), 1000);
+            return;
+        }
+
+        if (hasPurchased) { 
+            showToast('You have already purchased this model.', 'error');
+            return;
+        }
+
+        if (user?.email === model.developerEmail) {
+            showToast('You cannot purchase your own model.', 'error');
+            return;
+        }
+
+        setShowConfirmModal(true);
+    };
+
+    const confirmPurchase = async () => {
+        setShowConfirmModal(false);
+        setIsPurchasing(true);
+        
+        try {
+            const token = await user.getIdToken();
+
+            const transactionData = {
+                modelId: model._id,
+                modelName: model.modelName,
+                price: model.price,
+                buyerEmail: user.email,
+                developerEmail: model.developerEmail, 
+            };
+            
+            // Call the purchase endpoint
+            // ✅ FIX: /purchase-model routeটি এখন সার্ভারে POST মেথডে ডিফাইন করা হয়েছে
+            const res = await fetch(`${SERVER_BASE_URL}/purchase-model`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(transactionData),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || `Transaction failed with status ${res.status}`);
+            }
+
+            // Transaction successful, update UI and Firestore status
+            showToast(`Thank you for buying ${model.modelName}! A receipt has been recorded.`, 'success');
+            setHasPurchased(true); 
+            
+        } catch (err) {
+            console.error('Purchase Transaction Failed:', err);
+            showToast(`Transaction Failed: ${err.message}`, 'error');
+        } finally {
+            setIsPurchasing(false);
+        }
+    };
+
+    // --- 4. Render Logic ---
+    const isTotalLoading = isModelLoading || isAuthLoading;
+    
+    if (isTotalLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh] bg-gray-50">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+                <p className="ml-3 text-lg text-gray-700">{isAuthLoading ? 'Authenticating User...' : 'Loading Model Details...'}</p>
+            </div>
+        );
+    }
+
+    if (!model) { 
+        return (
+            <div className="text-center p-10 min-h-[60vh] bg-gray-50">
+                <h1 className="text-4xl text-red-600 font-bold">Error Loading Model</h1>
+                <p className="text-xl mt-4 text-gray-700">{error || 'Model data is empty.'}</p>
+                <Link to="/" className="btn btn-primary mt-6">Back to Home</Link>
+            </div>
+        );
+    }
+    
+    // Button er state ebong content nirnoy
+    let buttonContent;
+    let buttonDisabled = isPurchasing || user?.email === model.developerEmail || hasPurchased; 
+    let buttonClass = "btn-lg w-full text-white font-bold transition duration-300 ";
+
+    if (!isLoggedIn) {
+        // Logged Out
+        buttonContent = 'Login to Purchase'; 
+        buttonClass += ' btn-warning';
+        buttonDisabled = false; 
+    } else if (user?.email === model.developerEmail) {
+        // Developer
+        // 🔑 FIX: text-error class যোগ করে ফন্ট কালার পরিবর্তন করা হলো
+        buttonContent = (
+            <span className="text-error font-bold">
+                Your Model (Cannot Buy)
+            </span>
+        );
+        buttonClass += ' btn-disabled ';
+        buttonDisabled = true;
+    } else if (hasPurchased) {
+        // Already Purchased
+        buttonContent = (
+            <span className="flex items-center justify-center ">
+                <CheckCircleIcon className="mr-2 h-6 w-6" /> Licensed (View History)
+            </span>
+        );
+        buttonClass += ' btn-success';
+        buttonDisabled = true;
+    } else if (isPurchasing) {
+        // Processing
+        buttonContent = 'Processing Transaction...';
+        buttonClass += ' btn-accent loading'; 
+        buttonDisabled = true;
+    } else {
+        // Ready to Buy (Logged In, Not Purchased)
+        buttonContent = `Buy Now for $${model.price.toFixed(2)}`;
+        buttonClass += ' btn-accent';
+        buttonDisabled = false;
+    }
+
+    // Purchase button click handler: Logged In hole handlePurchase, na hole /login-e redirect
+    const finalButtonAction = isLoggedIn ? handlePurchase : () => navigate('/login');
+
+    return (
+        <div className="container mx-auto p-4 md:p-10 min-h-screen">
+            <ToastNotification 
+                show={toast.show} 
+                message={toast.message} 
+                type={toast.type} 
+                onClose={() => setToast({ ...toast, show: false })} 
+            />
+
+            {/* Display warning if mock data is used */}
+            {model._id === MOCK_MODEL._id && (
+                <div role="alert" className="alert alert-warning mb-6 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <span>Warning: Could not connect to the live server. Displaying **MOCK DATA** for UI testing.</span>
+                </div>
+            )}
+            
+            <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
+                    
+                    {/* Image and Primary Info (Col 1) */}
+                    <div className="lg:col-span-1">
+                        <figure className="aspect-video rounded-lg overflow-hidden shadow-lg mb-6">
+                            <img 
+                                src={model.imageUrl || 'https://placehold.co/800x600/F3F4F6/9CA3AF?text=Model+Image'} 
+                                alt={model.modelName} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.target.onerror = null; 
+                                    e.target.src = 'https://placehold.co/800x600/F3F4F6/9CA3AF?text=Model+Image';
+                                }}
+                            />
+                        </figure>
+                        <div className="text-center py-4 bg-primary text-white rounded-lg shadow-xl">
+                            <p className="text-3xl font-extrabold">${model.price.toFixed(2)}</p>
+                            <p className="text-sm opacity-80 mt-1">One-time License Fee</p>
+                        </div>
+                    </div>
+
+                    {/* Details and Description (Col 2 & 3) */}
+                    <div className="lg:col-span-2">
+                        <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{model.modelName}</h1>
+                        <p className="text-xl text-gray-600 border-b pb-4 mb-4">{model.description}</p>
+
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Category</p>
+                                <p className="text-lg font-semibold text-secondary">{model.category}</p>
+                            </div>
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Developer</p>
+                                <p className="text-lg font-semibold text-secondary">{model.developerEmail}</p>
+                            </div>
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Purchase Count</p>
+                                <p className="text-lg font-semibold text-primary">{model.purchased || 0}</p>
+                            </div>
+                             <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Model ID</p>
+                                <p className="text-sm font-mono text-gray-700 truncate">{model._id}</p>
+                            </div>
+                        </div>
+
+                        {/* Purchase Action Button */}
+                        <div className="mt-8">
+                            <button
+                                onClick={finalButtonAction}
+                                className={`btn ${buttonClass}`}
+                                disabled={buttonDisabled}
+                            >
+                                {buttonContent}
+                            </button>
+                            {/* Link to history if purchased */}
+                            {hasPurchased && (
+                                <Link to="/purchase-history" className="btn btn-sm btn-link mt-2 block text-center">
+                                    Go to My Purchase History
+                                </Link>
+                            )}
+
+                            <p className="text-sm text-gray-500 mt-3 text-center">
+                                {isLoggedIn ? 'Your purchase is secured by Firebase Authentication.' : 'Authentication is required for all transactions.'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Custom Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirm Purchase?</h3>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to buy <strong>{model.modelName}</strong> for ${model.price.toFixed(2)}?
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button 
+                                onClick={() => setShowConfirmModal(false)} 
+                                className="btn btn-outline"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={confirmPurchase} // This calls the API transaction
+                                className={`btn btn-primary ${isPurchasing ? 'loading' : ''}`} // ⬅️ **loading ক্লাসটি যোগ করা হয়েছে**
+                                disabled={isPurchasing}
+                            >
+                                {isPurchasing ? 'Processing...' : 'Yes, Purchase it!'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};

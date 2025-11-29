@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-// Path Correction: AuthProvider-er shothik path dhora holo (assuming providers is inside src)
-import { useAuth } from '../../providers/AuthProvider'; // ⬅️ Path corrected: Changed '../../' to '../'
-import { getAuth } from "firebase/auth"; // 🔥 Firebase Auth Instance-er jonno onibarjo
+import { useAuth } from '../../providers/AuthProvider'; // Path corrected
+import { getAuth } from "firebase/auth"; 
 import { Link } from 'react-router-dom';
 
 const SERVER_BASE_URL = 'http://localhost:5001';
@@ -11,6 +10,11 @@ const MyModels = () => {
     const { user } = useAuth(); 
     const [myModels, setMyModels] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // 🔑 ADDED: Deleting state for button spinner
+    const [isDeleting, setIsDeleting] = useState(false); 
+    const [deletingId, setDeletingId] = useState(null); // কোন মডেলটি ডিলিট হচ্ছে তার ID ট্র্যাক করার জন্য
+
     // Custom Toast/Notification state
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     
@@ -89,6 +93,10 @@ const MyModels = () => {
         const isConfirmed = window.confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`);
 
         if (isConfirmed) {
+            // 🔑 Set loading state for the specific button
+            setIsDeleting(true);
+            setDeletingId(id);
+
             try {
                 // 🔥 CRITICAL: Firebase theke ID Token toiri kora hochche
                 const token = await currentUser.getIdToken(); 
@@ -127,11 +135,16 @@ const MyModels = () => {
                 console.error("Delete Error:", error);
                 // ⭐ Custom Toast ব্যবহার করা হলো ⭐
                 showToast(`Model could not be deleted. Details: ${error.message}`, 'error');
+            } finally {
+                // 🔑 Reset loading state
+                setIsDeleting(false);
+                setDeletingId(null);
             }
         }
     };
 
 
+    // 🔑 Data Fetching Spinner (Already correct)
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
@@ -196,16 +209,24 @@ const MyModels = () => {
                                         {/* Edit Button */}
                                         <Link 
                                             to={`/update-model/${model._id}`} 
-                                            className="btn btn-info btn-sm text-white hover:opacity-80 transition duration-300"
+                                            // 🔑 Disable Edit button also when deleting
+                                            className={`btn btn-info btn-sm text-white hover:opacity-80 transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
+                                            disabled={isDeleting}
                                         >
                                             Edit
                                         </Link>
-                                        {/* Delete button */}
+                                        {/* Delete button with spinner logic */}
                                         <button 
                                             onClick={() => handleDelete(model._id, model.modelName)}
-                                            className="btn btn-error btn-sm text-white hover:opacity-80 transition duration-300"
+                                            // 🔑 Spinner Logic Added
+                                            className={`btn btn-error btn-sm text-white hover:opacity-80 transition duration-300 
+                                                ${isDeleting && deletingId === model._id ? 'loading' : ''}
+                                            `}
+                                            // 🔑 Disable all buttons during deletion (or only the current one if not tracking all)
+                                            disabled={isDeleting}
                                         >
-                                            Delete
+                                            {/* Text is hidden when loading to show only the spinner */}
+                                            {isDeleting && deletingId === model._id ? '' : 'Delete'}
                                         </button>
                                     </td>
                                 </tr>

@@ -10,7 +10,7 @@ const AddModel = () => {
     const SERVER_BASE_URL = 'http://localhost:5001'; 
 
     // State for loading/disabled button
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // 🔑 Already correct
 
     const handleAddModel = async (e) => {
         e.preventDefault();
@@ -29,28 +29,27 @@ const AddModel = () => {
             description: form.description.value,
             price: parseFloat(form.price.value),
             category: form.category.value,
-            // ✅ FIX: Image URL shothikbhabe form-er input field theke neowa holo
             imageUrl: form.imageUrl.value, 
             developerEmail: user.email, 
+            framework: form.framework.value, 
+            useCase: form.useCase.value,
+            dataset: form.dataset.value,
+            purchased: 0, 
         };
         
         try {
-            // 1. Get the Firebase ID Token for authorization
             const token = await user.getIdToken();
 
-            // 2. Send secure POST request using built-in fetch
             const res = await fetch(`${SERVER_BASE_URL}/models`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 🔑 Firebase ID Token attached for authorization
                     'Authorization': `Bearer ${token}` 
                 },
                 body: JSON.stringify(newModel),
             });
             
             if (!res.ok) {
-                // Handle HTTP errors (e.g., 400 Bad Request, 500 Server Error)
                 const errorData = await res.json();
                 throw new Error(errorData.message || `Server responded with status ${res.status}`);
             }
@@ -70,7 +69,6 @@ const AddModel = () => {
             }
 
         } catch (error) {
-            // This catches network errors (like Load Failed) and validation errors from the server
             console.error('Model Add Error:', error.message);
             Swal.fire({
                 icon: 'error',
@@ -100,7 +98,7 @@ const AddModel = () => {
                     <input type="number" step="0.01" name="price" placeholder="e.g., 99.99" className="input input-bordered" required />
                 </div>
 
-                {/* Image URL (New Field Added to satisfy Server Schema) */}
+                {/* Image URL */}
                 <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Image URL</span></label>
                     <input 
@@ -125,6 +123,24 @@ const AddModel = () => {
                     </select>
                 </div>
                 
+                {/* Framework (NEW) */}
+                <div className="form-control">
+                    <label className="label"><span className="label-text font-semibold">Framework</span></label>
+                    <input type="text" name="framework" placeholder="e.g., PyTorch, TensorFlow, Keras" className="input input-bordered" required />
+                </div>
+
+                {/* Use Case (NEW) */}
+                <div className="form-control">
+                    <label className="label"><span className="label-text font-semibold">Primary Use Case</span></label>
+                    <input type="text" name="useCase" placeholder="e.g., Medical Diagnosis, Code Generation" className="input input-bordered" required />
+                </div>
+                
+                {/* Dataset (NEW) */}
+                <div className="form-control">
+                    <label className="label"><span className="label-text font-semibold">Training Dataset</span></label>
+                    <input type="text" name="dataset" placeholder="e.g., Common Crawl, ImageNet, Custom" className="input input-bordered" required />
+                </div>
+
                 {/* Developer Email (Read-only) */}
                 <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Developer Email</span></label>
@@ -147,7 +163,8 @@ const AddModel = () => {
                 <div className="form-control mt-6 md:col-span-2">
                     <button 
                         type="submit" 
-                        className={`btn btn-primary w-full transition duration-300 ${isSubmitting ? 'loading' : ''}`}
+                        // 🔑 Spinner Logic: isSubmitting হলে 'loading' ক্লাস যোগ হবে
+                        className={`btn btn-primary w-full transition duration-300 ${isSubmitting ? 'loading' : ''}`} 
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? 'Adding Model...' : 'Add Model to Inventory'}

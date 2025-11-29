@@ -1,35 +1,34 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider'; 
-import { getAuth, signOut } from "firebase/auth";
+// getAuth এবং signOut-এর ইমপোর্ট অপ্রয়োজনীয়, কারণ আমরা useAuth() থেকে logout ব্যবহার করছি।
 
 const Navbar = () => {
-    // Auth context theke user info newa
-    const { user } = useAuth();
+    // Auth context থেকে user info এবং logout ফাংশনটি destructure করা হলো
+    const { user, logout } = useAuth(); // 'logout' হবে, 'signOut' নয়
     const navigate = useNavigate();
-    const auth = getAuth();
 
     // Logout handler
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await logout(); 
             // Successful sign out er por login page e redirect
             navigate('/login');
         } catch (error) {
             console.error("Logout Error:", error);
-            // Simple alert used as a fallback, ideally replaced by a toast/modal
             window.alert("Logout failed. Check console for details.");
         }
     };
 
-    // Common navigation links for both mobile and desktop
+    // 🔑 UPDATED LOGIC: Common navigation links for both mobile and desktop
+    // এখন শুধু Home, View Models, এবং শর্তসাপেক্ষে Add Model থাকবে।
     const navLinks = (
         <>
             <li><Link to="/">Home</Link></li>
-            {/* Only show these links if the user is logged in */}
+            {/* View Models: সকল মডেল দেখার জন্য একটি নতুন লিঙ্ক (ধরে নেওয়া হচ্ছে /models রুটে সমস্ত মডেল দেখা যায়) */}
+            <li><Link to="/models">View Models</Link></li> 
+            
+            {/* Add Model: শুধুমাত্র লগইন করা ব্যবহারকারীর জন্য */}
             {user && <li><Link to="/add-model">Add Model</Link></li>}
-            {user && <li><Link to="/my-models">My Models</Link></li>}
-            {/* 🔑 CRITICAL: Purchase History Link */}
-            {user && <li><Link to="/purchase-history">Purchase History</Link></li>}
         </>
     );
 
@@ -65,21 +64,46 @@ const Navbar = () => {
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                             <div className="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                                {/* Email er prothom letter */}
-                                {user.email ? user.email[0].toUpperCase() : 'U'}
+                                {/* Email er prothom letter athoba user photo */}
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt="Profile" className="rounded-full w-full h-full object-cover" />
+                                ) : (
+                                    user.email ? user.email[0].toUpperCase() : 'U'
+                                )}
                             </div>
                         </div>
                         <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                            {/* 1. User Name/Email (Profile Info) */}
                             <li>
-                                <span className="justify-between text-sm font-bold text-secondary">
-                                    {user.email}
-                                </span>
+                                <Link to="/profile-update" className="justify-between text-sm font-bold text-secondary">
+                                    {/* ইউজার নেম বা ইমেল দেখান */}
+                                    {user.displayName || user.email}
+                                    <span className="badge badge-primary badge-outline text-xs">Profile</span>
+                                </Link>
                             </li>
-                            {/* Dropdown e shob important user links */}
-                            <li><Link to="/add-model">Add Model</Link></li>
-                            <li><Link to="/my-models">My Models</Link></li>
-                            <li><Link to="/purchase-history">Purchase History</Link></li>
-                            <li><a onClick={handleLogout} className='text-error font-semibold'>Logout</a></li>
+                            
+                            {/* 2. My Models Link (Only in Dropdown) */}
+                            <li>
+                                <Link to="/my-models">
+                                    My Models
+                                </Link>
+                            </li>
+                            
+                            {/* 3. Purchase History Link (Only in Dropdown) */}
+                            <li>
+                                <Link to="/purchase-history">
+                                    Model Purchase History
+                                </Link>
+                            </li>
+                            
+                            <div className="divider my-1 h-px bg-gray-200"></div> 
+                            
+                            {/* 4. Logout Action */}
+                            <li>
+                                <a onClick={handleLogout} className='text-error font-semibold'>
+                                    Logout
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 ) : (

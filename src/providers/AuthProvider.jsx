@@ -1,88 +1,122 @@
 // client/src/providers/AuthProvider.jsx
-import { createContext, useEffect, useState, useContext } from 'react';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+    onAuthStateChanged, 
+    signInWithCustomToken, 
+    signInAnonymously, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile // ✅ updateProfile অবশ্যই থাকবে
+} from 'firebase/auth';
+
+// ✅ FIX: The initialized services are correctly imported here.
+// ধরে নেওয়া হচ্ছে যে আপনার '../firebase/firebase.config' ফাইলে 'auth' এক্সপোর্ট করা হয়েছে।
+import { auth, db } from '../firebase/firebase.config'; 
 
 
-import { createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged, signOut,GoogleAuthProvider, signInWithPopup,updateProfile } from 'firebase/auth';
+// Auth Context তৈরি
+const AuthContext = createContext();
 
+export const useAuth = () => {
+    // 🔑 FIX: যদি AuthContext-এর বাইরে useAuth কল করা হয়, তবে একটি error throw করা যেতে পারে
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
 
-import auth from '../firebase/firebase.config'; // Import the initialized auth object
-
-export const AuthContext = createContext(null);
-
-// Google Provider create 
-const googleProvider = new GoogleAuthProvider();
-
-
-const AuthProvider = ({ children }) => {
+// AuthProvider কম্পোনেন্ট (এটি Auth লজিক পরিচালনা করে)
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    // Initial Authentication and State Listener
+    useEffect(() => {
+        // user state change হলে এই ফাংশনটি কল হবে
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            setIsLoading(false);
+        });
+
+        // The following variables are likely set in the environment or globals 
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
 
-    // Observer for user authentication state
-     // 🅰️ ইমেইল ও পাসওয়ার্ড দিয়ে রেজিস্টার
-    const registerUser = (email, password) => {
-        setLoading(true);
-        return createUserWithEmailAndPassword(auth, email, password);
-    };
-     // 🅱️ ইমেইল ও পাসওয়ার্ড দিয়ে লগইন
-    const loginUser = (email, password) => {
-        setLoading(true);
+        // ক্যানভাস এনভায়রনমেন্ট থেকে প্রাপ্ত কাস্টম টোকেন দিয়ে সাইন ইন করা
+        const initializeAuth = async () => {
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } catch (error) {
+                    console.error("Custom Token Sign-In Failed, falling back to anonymous:", error);
+                    await signInAnonymously(auth);
+                }
+            } else {
+                // টোকেন না থাকলে বেনামী (anonymous) ভাবে সাইন ইন করা
+                await signInAnonymously(auth);
+            }
+        };
+
+        if (isLoading) {
+            initializeAuth();
+        }
+        
+        return unsubscribe; // Cleanup function
+    }, []);
+
+    // Login function
+    const login = (email, password) => {
         return signInWithEmailAndPassword(auth, email, password);
     };
 
-    // 🆎 গুগল দিয়ে লগইন
-    const googleLogin = () => {
-        setLoading(true);
-        return signInWithPopup(auth, googleProvider);
+    // Signup function
+    const signup = (email, password) => {
+        return createUserWithEmailAndPassword(auth, email, password);
     };
 
-
-   // 🔑 FIX: Corrected function call to Firebase's updateProfile 
+    // Update Profile function 
     const updateUserProfile = (name, photoURL) => {
-        // Firebase Auth SDK-er shothik 'updateProfile' function call
-        return updateProfile(auth.currentUser, { 
-            displayName: name,
-            photoURL: photoURL
-        });
+        if (auth.currentUser&& !auth.currentUser.isAnonymous) {
+            return updateProfile(auth.currentUser, {
+                displayName: name,
+                photoURL: photoURL
+            });
+        }
+        return Promise.reject(new Error("No user is currently logged in."));
     }
 
-
     // Logout function
-    const logOut = () => {
-        setLoading(true);
-        return signOut(auth);
+    const logout = () => {
+        // 🔑 CORE LOGIC: সরাসরি Firebase এর signOut ফাংশন কল করা
+        return signOut(auth); 
     };
-
-
-        useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, currentUser => {
-            setUser(currentUser);
-            setLoading(false);
-            console.log('Current User:', currentUser);
-        });
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, []);
-
-    const authInfo = {
+    
+    const value = {
         user,
-        loading,
-        logOut,
-        registerUser,
-        loginUser,
-        googleLogin,
-        updateUserProfile, // Ekhon shothik function byabohar kora jabe
-        auth,
-        
-
-        // Include other auth methods (login, register) here later
+        isLoading,
+        auth, 
+        db,   
+        login,
+        signup,
+        logout, // ✅ এটিকে Navbar-এর জন্য এক্সপোর্ট করা নিশ্চিত করুন
+        updateUserProfile, 
+        isLoggedIn: !!user && !user.isAnonymous, 
     };
 
     return (
-        <AuthContext.Provider value={authInfo}>
-            {children}
+        <AuthContext.Provider value={value}>
+            {/* isLoading চলাকালীন কোনো ইউআই না দেখানো উচিত নয়, 
+               কারণ onAuthStateChanged লোড হওয়ার পরেই children রেন্ডার হওয়া দরকার।
+               তবে আপনার PrivateRoute/MainLayout সেই লোডিং হ্যান্ডেল করে বলে এখানে শর্ত যোগ করা হলো না। */}
+            {!isLoading && children} 
+            {isLoading && (
+                 <div className="flex justify-center items-center min-h-screen">
+                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                 </div>
+            )}
         </AuthContext.Provider>
     );
 };
-export const useAuth = () => useContext(AuthContext);
-export default AuthProvider;

@@ -1,90 +1,160 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import auth from '../../firebase/firebase.config'; 
-import { useAuth } from '../../providers/AuthProvider';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../providers/AuthProvider.jsx'; 
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'; 
+// import ParticlesBackground from '../../component/Form Img/ParticlesBackground.jsx'; 
 
-const Login = () => {
-    const { user } = useAuth(); 
-    const [error, setError] = useState('');
+export const Login = () => {
+    const [email, setEmail] = useState('');
+    const [emailFocused, setEmailFocused] = useState(false);
+    const [password, setPassword] = useState('');
+    const [passwordFocused, setPasswordFocused] = useState(false);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const { login } = useAuth(); 
     const navigate = useNavigate();
 
-    // If the user is already logged in (and not anonymous), redirect to home
-    if (user && !user.isAnonymous) {
-        navigate('/');
-        return null;
-    }
-
-    // --- 1. Email/Password Login ---
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        const form = e.target;
-        const email = form.email.value;
-        const password = form.password.value;
-        
+        setError(null);
+        setIsLoading(true);
+
         try {
-            await signInWithEmailAndPassword(auth, email, password); 
+            await login(email, password);
+            alertUser('Login successful! Redirecting...', 'success');
             navigate('/'); 
+            
         } catch (err) {
             console.error(err);
-            setError('Login failed. Check your email and password.');
+            let errorMessage = "An unknown error occurred.";
+            if (err.code === 'auth/invalid-email') errorMessage = 'Invalid email address.';
+            else if (err.code === 'auth/wrong-password') errorMessage = 'Invalid password.';
+            else if (err.code === 'auth/user-not-found') errorMessage = 'No user found with this email.';
+            else if (err.code === 'auth/weak-password') errorMessage = 'Password should be at least 6 characters.';
+
+            setError(errorMessage);
+            alertUser(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
         }
+    };
+    
+    const alertUser = (message, type) => {
+        console.log(`[${type.toUpperCase()}] ${message}`); 
     };
 
-    // --- 2. Google Login ---
-    const handleGoogleLogin = async () => {
-        const googleProvider = new GoogleAuthProvider();
-        try {
-            await signInWithPopup(auth, googleProvider);
-            navigate('/');
-        } catch (err) {
-            console.error(err);
-            setError('Google login failed.');
-        }
-    };
 
     return (
-        <div className="min-h-[70vh] flex items-center justify-center p-4">
-            <div className="card w-full max-w-sm shadow-2xl bg-base-100">
-                <h2 className="text-3xl font-bold pt-6 text-center">Login</h2>
+        <div className="relative flex items-center justify-center min-h-screen ">
+            {/* <ParticlesBackground /> */}
+            
+            <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
                 
-                <form className="card-body" onSubmit={handleLogin}>
+                <form className="card-body" onSubmit={handleSubmit}>
                     
+                    {/* 🔑 Lottie Animation */}
+                    <h2 className="card-title text-primary justify-center">
+                        <div style={{ width: '250px', height: '250px', marginBottom: '-70px', marginTop: '-80px' }}>
+                            <DotLottieReact
+                                src="https://lottie.host/ad7cb7f5-fa39-4825-bfdb-1aba3b76dc70/bMGjzqthd6.lottie"
+                                loop
+                                autoplay
+                            />
+                        </div>
+                    </h2>
+                
                     {error && (
                         <div role="alert" className="alert alert-error mb-4">
-                             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <span>{error}</span>
                         </div>
                     )}
 
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Email</span></label>
-                        <input type="email" name="email" placeholder="email" className="input input-bordered" required />
-                    </div>
-                    <div className="form-control">
-                        <label className="label"><span className="label-text">Password</span></label>
-                        <input type="password" name="password" placeholder="password" className="input input-bordered" required />
-                        <label className="label"><a href="#" className="label-text-alt link link-hover">Forgot password?</a></label>
+                    {/* Email Input Field */}
+                    <div className="form-control relative mb-6"> 
+                        <label 
+                            htmlFor="email-input"
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            ${email || emailFocused
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1 py-2 z-10 left-3' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                            }`}
+                        >
+                            Email Address
+                        </label>
+
+                        <input
+                            id="email-input"
+                            type="email"
+                            placeholder="" 
+                            className="input w-full bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            onFocus={()=> setEmailFocused(true)}
+                            onBlur={()=> setEmailFocused(false)}
+                            required
+                        />
                     </div>
 
-                    <div className="form-control mt-6">
-                        <button type="submit" className="btn btn-primary">Login</button>
+                    {/* Password Input Field */}
+                    <div className="form-control relative mb-6">
+                        <label  htmlFor="password-input"
+                        className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]
+                            ${password || passwordFocused
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1 py-2 z-10 left-3' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                            }`}
+                        >
+                            Password
+                        </label>
+
+
+                        <input
+                          id='password-input'
+                          type="password"
+                          placeholder=""
+                          className="input w-full pt-6 pb-2 bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none"
+
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            onFocus={() => setPasswordFocused(true)}
+                            onBlur={() => setPasswordFocused(false)}
+                            required
+                        />
+                    </div>
+
+
+
+                    <div className="form-control mt-1 mx-auto">
+                        <button 
+                            type="submit" 
+                            className={`btn btn-primary text-white font-bold ${isLoading ? 'btn-disabled' : ''}`}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 
+                                <span className="loading loading-spinner"></span> : 
+                                'Log In' 
+                            }
+                        </button>
+                    </div>
+                    
+                    <div className="text-center mt-4">
+                        <p className="text-sm text-gray-600">
+                            Don't have an account?
+                        </p>
+                        <Link 
+                            to="/register" 
+                            className="btn btn-link text-secondary" 
+                        >
+                            Create Account Here
+                        </Link>
+                        <p className="text-xs text-gray-400 mt-2">
+                            You can also continue anonymously to browse.
+                        </p>
                     </div>
                 </form>
-
-                <div className="text-center p-6 pt-0">
-                    <p className="mb-4">Don't have an account? <Link to="/register" className="link link-primary">Register here</Link></p>
-                    
-                    <div className="divider">OR</div>
-                    
-                    <button onClick={handleGoogleLogin} className="btn btn-outline btn-error w-full">
-                        Sign In with Google
-                    </button>
-                </div>
             </div>
         </div>
     );
 };
-
-export default Login;

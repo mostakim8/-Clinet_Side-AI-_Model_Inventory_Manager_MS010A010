@@ -1,27 +1,29 @@
-import { useContext } from 'react';
-import { AuthContext } from '../providers/AuthProvider';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../providers/AuthProvider'; // Path shothik kora holo
 
 const PrivateRoute = ({ children }) => {
-    // Auth context  user, loading state 
-    const { user, loading } = useContext(AuthContext);
+    // AuthProvider theke user ebong loading state nawa
+    const { user, loading } = useAuth();
     const location = useLocation();
 
-    // 1. Loading state handle করা
+    // 1. Authentication check cholche
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-[70vh]">
+                {/* Tailwind/DaisyUI loading spinner */}
                 <span className="loading loading-spinner loading-lg text-primary"></span>
             </div>
         );
     }
 
-    
-    if (user && !user.isAnonymous) {
+    // 2. User authenticated hole, children component (protected page) dekhano hobe
+    if (user) {
         return children;
     }
 
-    
+    // 3. User authenticated na hole, login page-e redirect kora hobe
+    // State-e current location path pathano hobe jate login-er por shei page-e phire jawa jay
     return <Navigate to="/login" state={{ from: location }} replace />;
 };
 

@@ -6,7 +6,8 @@ import { useAuth } from '../../providers/AuthProvider.jsx';
 // Server base URL 
 const SERVER_BASE_URL = 'http://localhost:5001'; 
 
-export const Home = () => {
+// 🔑 NEW COMPONENT: ViewModels.jsx (Displays ALL models)
+export const ViewModels = () => {
     const { user } = useAuth(); 
 
     // States for fetched data, loading status, and errors
@@ -63,7 +64,7 @@ export const Home = () => {
         );
     }
     
-    // --- Empty State Display (No models fetched at all) ---
+    // --- Empty State Display ---
     if (models.length === 0) {
         return (
             <div className="text-center my-20 p-8 border border-gray-200 rounded-xl bg-white shadow-lg max-w-xl mx-auto">
@@ -82,35 +83,30 @@ export const Home = () => {
         (model.category && model.category.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    let displayModels = filteredModels;
-    if( searchTerm===''){
-      const featuredModelIds = [...filteredModels].sort((a,b)=>{
-        return b._id.localeCompare(a._id);
-      }); // Example featured model IDs
-      displayModels = featuredModelIds.slice(0, 6); // Show only top 6 featured models
-    }
-
+    // 🔑 CHANGE: Always display filteredModels (No 6-model limit)
+    let displayModels = filteredModels; 
+    
     // --- Main Content Display ---
     return (
         <div className="py-4"> 
             <Helmet>
-                <title>AI Model Market - Discover</title>
+                <title>AI Model Market - All Models</title>
             </Helmet>
 
             <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">
-                Discover the Best AI Models
+                All Available AI Models
             </h1>
             
-            {/* 🔑 NEW: H4 and Search Bar Container */}
-            <div className="flex flex-col sm:flex-row justify-between  mb-10 px-4  py-4 rounded-lg gap-4 md:gap-0">
-                {/* H4 Title (Left Side) */}
+            {/* H4 and Search Bar Container */}
+            <div className="flex flex-col md:flex-row justify-between mb-10 px-4 bg-yellow-200/10 py-4 rounded-lg gap-4 md:gap-0">
+                {/* H4 Title (Left Side) - Updated text */}
                 <h4 className="text-2xl font-semibold text-primary mb-4 md:mb-0">
-                  Latest AI Models </h4>
+                    Showing All {models.length} Models
+                </h4>
 
                 {/* Search Input Field (Right Side) */}
-                <div className="w-full sm:w-50"> {/* নির্দিষ্ট প্রস্থ (w-96) ব্যবহার করা হয়েছে */}
-                    <label className="input input-bordered flex items-center gap-2 w-full shadow-md bg-black-200 text-gray-400">
-                       
+                <div className="w-full md:w-96"> 
+                    <label className="input input-bordered flex items-center gap-2 w-full input-md shadow-md bg-black-200 text-gray-400">
                         <input
                             type="text"
                             placeholder="Search models by name or category..."
@@ -139,12 +135,11 @@ export const Home = () => {
                 </div>
             )}
 
-            {/* Use filteredModels for mapping */}
+            {/* Model Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {/* Fetched models data is mapped here */}
                 {displayModels.map((model) => {
                     return (
-                        <div key={model._id} className="card bg-gray-500  shadow-xl hover:shadow-2xl transition duration-300">
+                        <div key={model._id} className="card bg-white shadow-xl hover:shadow-2xl transition duration-300">
                             <figure className="h-48 overflow-hidden">
                                 <img 
                                     src={model.imageUrl || 'https://placehold.co/400x300/CCCCCC/666666?text=No+Image'} 
@@ -153,7 +148,7 @@ export const Home = () => {
                                 />
                             </figure>
                             <div className="card-body p-6">
-                                <h2 className="card-title text-xl text-white">{model.modelName}</h2>
+                                <h2 className="card-title text-xl text-gray-900">{model.modelName}</h2>
                                 <p className="text-2xl font-bold text-accent">${parseFloat(model.price).toFixed(2)}</p>
                                 
                                 <div className="card-actions justify-end mt-4">
@@ -170,17 +165,9 @@ export const Home = () => {
                 })}
             </div>
 
-
-{/* 'Show All Models' Button (Only shown when not searching and there are more than 6 models) */}
-            {searchTerm === '' && models.length > 6 && (
-                <div className="text-center my-10">
-                    {/* এখানে একটি 'Show All Models' বাটন যোগ করা যেতে পারে, যা সমস্ত মডেল দেখাতে একটি নতুন Route-এ যেতে পারে বা বর্তমান 'searchTerm' স্টেট পরিবর্তন করতে পারে, যদি আপনার অন্য পেজ না থাকে। আপাতত, এটি একটি ডামি বাটন হিসেবে রাখা হলো। */}
-                    <Link to="/models" className="btn btn-secondary btn-lg shadow-lg">
-                        Show All {models.length} Models
-                    </Link>
-                </div>
-            )}
-
+        {/* ❌ Removed the 'Show All Models' button here as this page shows all models */}
         </div>
     );
 };
+
+export default ViewModels;
