@@ -127,7 +127,7 @@ export const PurchaseHistory = () => {
                                 {purchases.map((p) => (
                                     <tr key={p.id}>
                                         <td className="font-semibold text-gray-800">
-                                            <Link to={`/model/${p.modelId}`} className="link link-hover text-primary">
+                                            <Link to={`/app/model/${p.modelId}`} className="link link-hover text-primary">
                                                 {p.modelName}
                                             </Link>
                                         </td>

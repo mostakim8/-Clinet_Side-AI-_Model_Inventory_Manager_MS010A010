@@ -10,7 +10,7 @@ const MainLayout = () => {
   // কোন পেজে আছি তা জানার জন্য useLocation ব্যবহার করা হচ্ছে
   const location = useLocation();
   // হোম পেজে অথবা /models রুটে স্লাইডার দেখানো হবে
-  const isHomePage = location.pathname === '/'; 
+  const isHomePage = location.pathname === '/app'; 
 
   return (
     <div className="flex flex-col min-h-screen dark:bg-gray-900 dark:text-white ">

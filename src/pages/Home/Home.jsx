@@ -166,7 +166,7 @@ export const Home = () => {
                                     
                                     <div className="card-actions justify-end mt-4">
                                         <Link 
-                                            to={`/model/${model._id}`} 
+                                            to={`/app/model/${model._id}`} 
                                             className="btn btn-primary btn-outline w-full"
                                         >
                                             View Details
@@ -182,7 +182,7 @@ export const Home = () => {
     {/* 'Show All Models' Button (Only shown when not searching and there are more than 6 models) */}
                 {searchTerm === '' && models.length > 6 && (
                     <div className="text-center my-10">
-                        <Link to="/models" className="btn btn-secondary btn-lg shadow-lg">
+                        <Link to="/app/models" className="btn btn-secondary btn-lg shadow-lg">
                             Show All {models.length} Models
                         </Link>
                     </div>

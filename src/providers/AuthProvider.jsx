@@ -4,15 +4,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
     onAuthStateChanged, 
     signInWithCustomToken, 
-    signInAnonymously, 
+    // signInAnonymously সরিয়ে দেওয়া হলো
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signOut,
-    updateProfile // ✅ updateProfile অবশ্যই থাকবে
+    updateProfile 
 } from 'firebase/auth';
 
-// ✅ FIX: The initialized services are correctly imported here.
-// ধরে নেওয়া হচ্ছে যে আপনার '../firebase/firebase.config' ফাইলে 'auth' এক্সপোর্ট করা হয়েছে।
 import { auth, db } from '../firebase/firebase.config'; 
 
 
@@ -20,7 +18,6 @@ import { auth, db } from '../firebase/firebase.config';
 const AuthContext = createContext();
 
 export const useAuth = () => {
-    // 🔑 FIX: যদি AuthContext-এর বাইরে useAuth কল করা হয়, তবে একটি error throw করা যেতে পারে
     const context = useContext(AuthContext);
     if (context === undefined) {
         throw new Error('useAuth must be used within an AuthProvider');
@@ -35,51 +32,60 @@ export const AuthProvider = ({ children }) => {
     
     // Initial Authentication and State Listener
     useEffect(() => {
-        // user state change হলে এই ফাংশনটি কল হবে
+        let isCancelled = false;
+        
+        // onAuthStateChanged লিসেনারটি Firebase থেকে ইউজার স্টেট আপডেট হলে কল হয়।
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setIsLoading(false);
+            // 🔑 এখানে isLoading সেট করা হলেও, initializeAuth এর কারণে এটি দ্রুত আপডেট নাও হতে পারে
+            if (!isCancelled) {
+                setUser(currentUser);
+                // 🔑 onAuthStateChanged যখন প্রথমবার ফায়ার করে, তখন লোডিং বন্ধ করা উচিত।
+                // তবে নিচে initializeAuth কল করার কারণে আমরা সেটিকে initializeAuth এর শেষে বন্ধ করব।
+            }
         });
 
-        // The following variables are likely set in the environment or globals 
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
 
-        // ক্যানভাস এনভায়রনমেন্ট থেকে প্রাপ্ত কাস্টম টোকেন দিয়ে সাইন ইন করা
+        // কাস্টম টোকেন থাকলে সাইন ইন করা, অন্যথায় কোনো সাইন ইন করা হবে না।
         const initializeAuth = async () => {
             if (initialAuthToken) {
                 try {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } catch (error) {
-                    console.error("Custom Token Sign-In Failed, falling back to anonymous:", error);
-                    await signInAnonymously(auth);
+                    console.error("Custom Token Sign-In Failed:", error);
+                    // টোকেন ফেইল হলে ইউজার null থাকবে
                 }
-            } else {
-                // টোকেন না থাকলে বেনামী (anonymous) ভাবে সাইন ইন করা
-                await signInAnonymously(auth);
+            } 
+            
+            // 🔑 টোকেন চেক শেষ হওয়ার পর লোডিং বন্ধ করা
+            if (!isCancelled) {
+                setIsLoading(false);
             }
         };
 
+        // 🔑 শুধু একবার initializeAuth কল করা
         if (isLoading) {
             initializeAuth();
         }
         
-        return unsubscribe; // Cleanup function
+        return () => {
+             isCancelled = true;
+             unsubscribe(); // Cleanup function
+        };
     }, []);
 
-    // Login function
+    // ... (বাকি ফাংশনগুলি অপরিবর্তিত)
     const login = (email, password) => {
         return signInWithEmailAndPassword(auth, email, password);
     };
 
-    // Signup function
     const signup = (email, password) => {
         return createUserWithEmailAndPassword(auth, email, password);
     };
 
-    // Update Profile function 
     const updateUserProfile = (name, photoURL) => {
-        if (auth.currentUser&& !auth.currentUser.isAnonymous) {
+        if (auth.currentUser && !auth.currentUser.isAnonymous) {
             return updateProfile(auth.currentUser, {
                 displayName: name,
                 photoURL: photoURL
@@ -88,9 +94,7 @@ export const AuthProvider = ({ children }) => {
         return Promise.reject(new Error("No user is currently logged in."));
     }
 
-    // Logout function
     const logout = () => {
-        // 🔑 CORE LOGIC: সরাসরি Firebase এর signOut ফাংশন কল করা
         return signOut(auth); 
     };
     
@@ -101,22 +105,22 @@ export const AuthProvider = ({ children }) => {
         db,   
         login,
         signup,
-        logout, // ✅ এটিকে Navbar-এর জন্য এক্সপোর্ট করা নিশ্চিত করুন
+        logout,
         updateUserProfile, 
+        // 🔑 isAnonymous চেকটি এখন আরও গুরুত্বপূর্ণ
         isLoggedIn: !!user && !user.isAnonymous, 
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {/* isLoading চলাকালীন কোনো ইউআই না দেখানো উচিত নয়, 
-               কারণ onAuthStateChanged লোড হওয়ার পরেই children রেন্ডার হওয়া দরকার।
-               তবে আপনার PrivateRoute/MainLayout সেই লোডিং হ্যান্ডেল করে বলে এখানে শর্ত যোগ করা হলো না। */}
-            {!isLoading && children} 
-            {isLoading && (
+            {/* 🔑 isLoading স্টেট ব্যবহার করে লোডিং ইউআই দেখানো */}
+            {isLoading ? (
                  <div className="flex justify-center items-center min-h-screen">
                     <span className="loading loading-spinner loading-lg text-primary"></span>
                  </div>
-            )}
+            ) : (
+                children
+            )} 
         </AuthContext.Provider>
     );
 };

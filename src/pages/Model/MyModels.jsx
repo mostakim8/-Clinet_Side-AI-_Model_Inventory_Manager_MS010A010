@@ -102,7 +102,7 @@ const MyModels = () => {
                 const token = await currentUser.getIdToken(); 
                 
                 // Send DELETE request to the server
-                const res = await fetch(`${SERVER_BASE_URL}/models/${id}`, {
+                const res = await fetch(`${SERVER_BASE_URL}/a/models/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}` // ✅ FIX: Token included here
@@ -171,7 +171,7 @@ const MyModels = () => {
             
             {myModels.length === 0 ? (
                 <p className="text-center text-xl text-gray-500">You haven’t added any models yet.
-                 <Link to="/add-model" className='link link-primary font-bold'>Add One Now</Link>।
+                 <Link to="/app/add-model" className='link link-primary font-bold'>Add One Now</Link>।
                 </p>
             ) : (
                 <div className="overflow-x-auto max-w-5xl mx-auto bg-base-200 p-4 rounded-xl shadow-lg">
@@ -208,7 +208,7 @@ const MyModels = () => {
                                     <td className="flex gap-2">
                                         {/* Edit Button */}
                                         <Link 
-                                            to={`/update-model/${model._id}`} 
+                                            to={`/app/update-model/${model._id}`} 
                                             // 🔑 Disable Edit button also when deleting
                                             className={`btn btn-info btn-sm text-white hover:opacity-80 transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
                                             disabled={isDeleting}

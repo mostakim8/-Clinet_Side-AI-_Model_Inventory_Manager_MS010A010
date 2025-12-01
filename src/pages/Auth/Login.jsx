@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider.jsx'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'; 
+import RegistorBtn from '../../component/buttons/RegistorBtn.jsx';
+import LogInLoader from '../../component/Loader/LogInLoader/LogInLoader.jsx';
 // import ParticlesBackground from '../../component/Form Img/ParticlesBackground.jsx'; 
+
+
 
 export const Login = () => {
     const [email, setEmail] = useState('');
@@ -23,7 +27,7 @@ export const Login = () => {
         try {
             await login(email, password);
             alertUser('Login successful! Redirecting...', 'success');
-            navigate('/'); 
+            navigate('/app'); //latest change 1
             
         } catch (err) {
             console.error(err);
@@ -48,7 +52,7 @@ export const Login = () => {
     return (
         <div className="relative flex items-center justify-center min-h-screen ">
             {/* <ParticlesBackground /> */}
-            
+            {isLoading && <LogInLoader />}
             <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
                 
                 <form className="card-body" onSubmit={handleSubmit}>
@@ -132,26 +136,19 @@ export const Login = () => {
                             className={`btn btn-primary text-white font-bold ${isLoading ? 'btn-disabled' : ''}`}
                             disabled={isLoading}
                         >
-                            {isLoading ? 
-                                <span className="loading loading-spinner"></span> : 
-                                'Log In' 
-                            }
+                            Log In
                         </button>
                     </div>
                     
                     <div className="text-center mt-4">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 mb-4">
                             Don't have an account?
+                           
                         </p>
-                        <Link 
-                            to="/register" 
-                            className="btn btn-link text-secondary" 
-                        >
-                            Create Account Here
-                        </Link>
-                        <p className="text-xs text-gray-400 mt-2">
-                            You can also continue anonymously to browse.
-                        </p>
+                         <RegistorBtn onClick={()=>navigate ('/register')} 
+                             > Registration
+                        </RegistorBtn>
+                        
                     </div>
                 </form>
             </div>
