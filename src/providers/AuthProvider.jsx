@@ -4,11 +4,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
     onAuthStateChanged, 
     signInWithCustomToken, 
-    // signInAnonymously সরিয়ে দেওয়া হলো
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signOut,
-    updateProfile 
+    updateProfile // ✅ updateProfile import করা আছে 
 } from 'firebase/auth';
 
 import { auth, db } from '../firebase/firebase.config'; 
@@ -34,37 +33,28 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let isCancelled = false;
         
-        // onAuthStateChanged লিসেনারটি Firebase থেকে ইউজার স্টেট আপডেট হলে কল হয়।
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            // 🔑 এখানে isLoading সেট করা হলেও, initializeAuth এর কারণে এটি দ্রুত আপডেট নাও হতে পারে
             if (!isCancelled) {
                 setUser(currentUser);
-                // 🔑 onAuthStateChanged যখন প্রথমবার ফায়ার করে, তখন লোডিং বন্ধ করা উচিত।
-                // তবে নিচে initializeAuth কল করার কারণে আমরা সেটিকে initializeAuth এর শেষে বন্ধ করব।
             }
         });
 
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-
-        // কাস্টম টোকেন থাকলে সাইন ইন করা, অন্যথায় কোনো সাইন ইন করা হবে না।
         const initializeAuth = async () => {
             if (initialAuthToken) {
                 try {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } catch (error) {
                     console.error("Custom Token Sign-In Failed:", error);
-                    // টোকেন ফেইল হলে ইউজার null থাকবে
                 }
             } 
             
-            // 🔑 টোকেন চেক শেষ হওয়ার পর লোডিং বন্ধ করা
             if (!isCancelled) {
                 setIsLoading(false);
             }
         };
 
-        // 🔑 শুধু একবার initializeAuth কল করা
         if (isLoading) {
             initializeAuth();
         }
@@ -84,14 +74,33 @@ export const AuthProvider = ({ children }) => {
         return createUserWithEmailAndPassword(auth, email, password);
     };
 
-    const updateUserProfile = (name, photoURL) => {
-        if (auth.currentUser && !auth.currentUser.isAnonymous) {
-            return updateProfile(auth.currentUser, {
-                displayName: name,
-                photoURL: photoURL
-            });
+    // 🔑 ফিক্স: updateUserProfile এখন async এবং user.reload() ব্যবহার করছে
+    const updateUserProfile = async (name, photoURL) => {
+        const currentUser = auth.currentUser;
+
+        if (currentUser && !currentUser.isAnonymous) {
+            try {
+                // 1. প্রোফাইল আপডেট
+                await updateProfile(currentUser, {
+                    displayName: name,
+                    photoURL: photoURL
+                });
+
+                // 2. 🌟 অত্যন্ত গুরুত্বপূর্ণ: ব্যবহারকারীর সেশন ডেটা রিলোড করা
+                await currentUser.reload(); 
+                
+                // 3. স্টেট আপডেট: নতুন user data দিয়ে setUser স্টেট আপডেট করা
+                setUser(auth.currentUser);
+                return; 
+
+            } catch (error) {
+                // এরর হলে সেটি থ্রো করা যাতে ProfileUpdate এর catch block এ ধরা পড়ে
+                console.error("Firebase updateProfile failed:", error);
+                throw error;
+            }
         }
-        return Promise.reject(new Error("No user is currently logged in."));
+        // যদি ইউজার লগইন না করে, তবে একটি এরর থ্রো করা
+        throw new Error("No user is currently logged in.");
     }
 
     const logout = () => {
@@ -107,7 +116,6 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         updateUserProfile, 
-        // 🔑 isAnonymous চেকটি এখন আরও গুরুত্বপূর্ণ
         isLoggedIn: !!user && !user.isAnonymous, 
     };
 

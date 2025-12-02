@@ -5,13 +5,10 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        // মূল ফুটার কন্টেইনার: 'bg-neutral' এবং 'p-10' ঠিক রাখা হয়েছে।
         <footer className="footer p-10 bg-neutral text-neutral-content mt-16 border-t border-gray-700">
-            {/* 🔑 মূল পরিবর্তন: একটি ফ্লেক্স কন্টেইনার যা বড় স্ক্রিনে বাম ও ডানে ভাগ করবে, এবং ছোট স্ক্রিনে সব কেন্দ্রে আনবে */}
             <div className="flex flex-col items-center  lg:flex-row lg:items-start lg:justify-between ">
 
                 {/* LEFT GROUP: Logo (Aside) + Services (Nav) */}
-                {/* ছোট স্ক্রিনে সব স্ট্যাক করে কেন্দ্রে রাখবে, বড় স্ক্রিনে পাশাপাশি এনে বামদিকে রাখবে */}
                 <div className="flex flex-col mx-20 items-center  lg:flex-row lg:items-start lg:text-left lg:gap-16 mb-8 lg:mb-0">
                     
                     {/* 1. Logo (Aside) */}
@@ -30,7 +27,6 @@ const Footer = () => {
 
 
                 {/* RIGHT GROUP: Company (Nav) + Legal (Nav) */}
-                {/* ছোট স্ক্রিনে সব স্ট্যাক করে কেন্দ্রে রাখবে, বড় স্ক্রিনে পাশাপাশি এনে ডানদিকে রাখবে */}
                 <div className="flex flex-col items-center text-center lg:flex-row lg:items-start lg:text-left lg:gap-28">
                     {/* 2. Services (Nav) */}
                     <nav className='text-center mb-8 lg:mb-0 text-gray-500'>

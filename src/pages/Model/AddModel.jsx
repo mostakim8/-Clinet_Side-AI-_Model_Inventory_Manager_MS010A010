@@ -25,15 +25,18 @@ const AddModel = () => {
 
         // Collect form data
         const newModel = {
-            modelName: form.modelName.value,
-            description: form.description.value,
-            price: parseFloat(form.price.value),
+            modelName: form.modelName.value, // add model page,all model page, model details page
+            framework: form.framework.value, // add model page,all model page, model details page
+            useCase: form.useCase.value, // medical diagnosis, code generation ba use purpose. // add model page,all model page, model details page thakbe eita
+            dataset: form.dataset.value, //wikipedia //add model page,model details page a thakbe
+            description: form.description.value, // brief description // all model page, model details page
+            imageUrl: form.imageUrl.value, //add model page all model page, model details page a thakbe eita
+
             category: form.category.value,
-            imageUrl: form.imageUrl.value, 
-            developerEmail: user.email, 
-            framework: form.framework.value, 
-            useCase: form.useCase.value,
-            dataset: form.dataset.value,
+           
+            developerEmail: user.email, // Automatically use logged-in user's email
+            createdAt: new Date().toISOString(),
+            
             purchased: 0, 
         };
         
@@ -84,21 +87,37 @@ const AddModel = () => {
         <div className="max-w-4xl mx-auto my-10 p-6 shadow-2xl bg-base-100 rounded-xl">
             <h1 className="text-4xl font-extrabold text-center mb-8 text-primary">Add New AI Model</h1>
             
-            <form onSubmit={handleAddModel} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleAddModel} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 
+                {/* main inputs */}
                 {/* Model Name */}
                 <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Model Name</span></label>
                     <input type="text" name="modelName" placeholder="e.g., GPT-5, Midjourney 7" className="input input-bordered" required />
                 </div>
-                
-                {/* Price */}
+
+                 {/* Framework  */}
                 <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Price (USD)</span></label>
-                    <input type="number" step="0.01" name="price" placeholder="e.g., 99.99" className="input input-bordered" required />
+                    <label className="label"><span className="label-text font-semibold">Framework</span></label>
+                    <input type="text" name="framework" placeholder="e.g., PyTorch, TensorFlow, Keras" className="input input-bordered" required />
                 </div>
 
-                {/* Image URL */}
+          {/* Use Case */}
+                <div className="form-control">
+                    <label className="label"><span className="label-text font-semibold"> Use Case</span></label>
+                    <input type="text" name="useCase" placeholder="e.g., Medical Diagnosis, Code Generation" className="input input-bordered" required />
+                </div>
+        {/* Dataset (NEW) */}
+                <div className="form-control">
+                    <label className="label"><span className="label-text font-semibold"> Dataset</span></label>
+                    <input type="text" name="dataset" placeholder="e.g., Common Crawl, ImageNet, Custom" className="input input-bordered" required />
+                </div>
+        {/* Description (Full Width) */}
+                <div className="form-control md:col-span-2">
+                    <label className="label"><span className="label-text font-semibold">Model Description</span></label>
+                    <textarea name="description" placeholder="A brief description of the model's capabilities and unique features." className="textarea textarea-bordered h-32" required></textarea>
+                </div>
+        {/* Image URL */}
                 <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Image URL</span></label>
                     <input 
@@ -110,10 +129,16 @@ const AddModel = () => {
                     />
                 </div>
 
+
+                {/* optional input */}
+                {/* Price */}
+                
+
                 {/* Category */}
                 <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Category</span></label>
-                    <select name="category" className="select select-bordered" required>
+
+                    <select name="category" className="select select-bordered" required >
                         <option value="" disabled selected>Select Category</option>
                         <option value="LLM">Large Language Model (LLM)</option>
                         <option value="Image Gen">Image Generation</option>
@@ -123,23 +148,11 @@ const AddModel = () => {
                     </select>
                 </div>
                 
-                {/* Framework (NEW) */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Framework</span></label>
-                    <input type="text" name="framework" placeholder="e.g., PyTorch, TensorFlow, Keras" className="input input-bordered" required />
-                </div>
+               
 
-                {/* Use Case (NEW) */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Primary Use Case</span></label>
-                    <input type="text" name="useCase" placeholder="e.g., Medical Diagnosis, Code Generation" className="input input-bordered" required />
-                </div>
+              
                 
-                {/* Dataset (NEW) */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Training Dataset</span></label>
-                    <input type="text" name="dataset" placeholder="e.g., Common Crawl, ImageNet, Custom" className="input input-bordered" required />
-                </div>
+                
 
                 {/* Developer Email (Read-only) */}
                 <div className="form-control">
@@ -153,11 +166,7 @@ const AddModel = () => {
                     />
                 </div>
 
-                {/* Description (Full Width) */}
-                <div className="form-control md:col-span-2">
-                    <label className="label"><span className="label-text font-semibold">Model Description</span></label>
-                    <textarea name="description" placeholder="A brief description of the model's capabilities and unique features." className="textarea textarea-bordered h-32" required></textarea>
-                </div>
+                
 
                 {/* Submit Button (Full Width) */}
                 <div className="form-control mt-6 md:col-span-2">

@@ -2,22 +2,21 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../providers/AuthProvider';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
+
 // ⚠️ IMPORTANT: Firebase Storage imports need to be added here. E.g.:
 // import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 // ⚠️ And you must initialize storage instance, e.g.:
 // const storage = getStorage(firebaseAppInstance); 
 
 const ProfileUpdate = () => {
-    // AuthProvider theke user o updateUserProfile function use kora
-    const { user, updateUserProfile } = useAuth();
+    // AuthProvider theke user, updateUserProfile এবং isLoading (isAuthLoading) function use kora
+    const { user, updateUserProfile, isLoading: isAuthLoading } = useAuth(); // 👈 isAuthLoading ব্যবহার করা হচ্ছে
     
     const [name, setName] = useState(user?.displayName || '');
-    // photoURL এখন বর্তমান বা আপলোড করা নতুন URL ধারণ করবে
     const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
     
-    // 🔑 NEW STATES for file upload
     const [imageFile, setImageFile] = useState(null); 
-    const [uploading, setUploading] = useState(false); // আপলোড স্ট্যাটাস দেখানোর জন্য
+    const [uploading, setUploading] = useState(false); 
 
     // User data change hole state update kora
     useEffect(() => {
@@ -41,24 +40,23 @@ const ProfileUpdate = () => {
             toast.error("Please select a file first.");
             return;
         }
+        // 🛑 ফিক্স: User চেক
+        if (!user) {
+            toast.error("User data is unavailable for image upload.");
+            return;
+        }
 
         setUploading(true);
         // Toast message start
         toast.loading("Uploading image...", { id: 'uploadToast' }); 
 
         try {
-            // 🛑 IMPLEMENTATION POINT: 
-            // 1. Storage Reference তৈরি করুন (e.g., ref(storage, `profiles/${user.uid}/${imageFile.name}`))
-            // 2. File টি আপলোড করুন (uploadBytes)
-            // 3. আপলোড করা ফাইলের Public Download URL টি নিন (getDownloadURL)
-            
             // 🔑 আপনাকে নিচের এই প্লেসহোল্ডার কোডটি আপনার রিয়েল Firebase Storage কোড দিয়ে প্রতিস্থাপন করতে হবে।
-            // For now, mocking a successful upload delay and generating a fake URL:
             await new Promise(resolve => setTimeout(resolve, 2000)); 
-            const uploadedUrl = `https://yourstorage.com/${user.uid}/${Date.now()}.jpg`; // 🛑 REPLACE THIS LINE
+            const uploadedUrl = `https://yourstorage.com/${user.uid}/${Date.now()}.jpg`; 
 
-            setPhotoURL(uploadedUrl); // নতুন URL টি photoURL স্টেটে আপডেট করা হলো
-            setImageFile(null); // File input টি খালি করা হলো
+            setPhotoURL(uploadedUrl); 
+            setImageFile(null); 
             toast.success('Image uploaded successfully! Click "Save Changes" to finalize.', { id: 'uploadToast' });
 
         } catch (error) {
@@ -73,28 +71,52 @@ const ProfileUpdate = () => {
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         
-        // Form-এর input থেকে নতুন name value নেওয়া
+        // 🛑 চূড়ান্ত ফিক্স: isAuthLoading বা user না থাকলে ফাংশনটি চলবে না
+        if (isAuthLoading) {
+            toast.error("User data is loading. Please wait a moment.");
+            return;
+        }
+
+        if (!user) {
+            toast.error("Authentication required. Redirecting to login.");
+            return;
+        }
+
+        // Form-এর input থেকে নতুন name value নেওয়া
         const newName = e.target.name.value;
-        const finalPhotoURL = photoURL; // photoURL state থেকে চূড়ান্ত URL নেওয়া
+        const finalPhotoURL = photoURL; 
+        
+        // 🛑 নতুন ফিক্স: কোনো পরিবর্তন হয়েছে কিনা তা পরীক্ষা করুন
+        const profileChanged = newName !== user.displayName || finalPhotoURL !== user.photoURL;
+
+        if (!profileChanged) {
+            toast('No changes detected. Name or Photo URL is the same.', { icon: 'ℹ️' });
+            return;
+        }
 
         if (uploading) {
             toast.error("Please wait for the image upload to complete.");
             return;
         }
-        
+        let updateToastId; // টোস্ট আইডি ডিফাইন করা হলো
         try {
+            updateToastId = toast.loading('Saving changes...');
+            // await new Promise(resolve => setTimeout(resolve, 100)); // 100ms অপেক্ষা
             // 🔑 CORE LOGIC: AuthProvider er function call kora
             await updateUserProfile(newName, finalPhotoURL);
             
             // Success toast message
-            toast.success('Profile updated successfully! Reloading...');
-            
-            // Update successful hole page-কে force reload করতে হবে 
-            window.location.reload(); 
+           toast.success('Profile updated successfully!', { id: updateToastId });
+            // window.location.reload(); 
 
         } catch (error) {
-            console.error(error);
-            toast.error('Failed to update profile. ' + error.message);
+            console.error("Profile Update Failed:", error); 
+            // 🛑 ফিক্স: No user... এরর এর ক্ষেত্রে সুনির্দিষ্ট মেসেজ
+            if (error.message.includes("No user is currently logged in")) {
+                toast.error("Session error. Please refresh and try again.",{ id: updateToastId });
+            } else {
+                toast.error('Failed to update profile. ' + error.message ,{ id: updateToastId });
+            }
         }
     };
 
@@ -109,7 +131,6 @@ const ProfileUpdate = () => {
                 {/* Current User Info Card */}
                 <div className="flex flex-col items-center p-4 bg-base-200 rounded-lg border border-gray-700/50">
                     <img 
-                        // 🔑 photoURL state থেকে current/uploaded URL দেখানো হচ্ছে
                         src={photoURL || 'https://i.ibb.co/6y4tH7v/default-profile.png'} 
                         alt="Current Profile" 
                         className="w-24 h-24 object-cover rounded-full border-4 border-accent"
@@ -132,6 +153,7 @@ const ProfileUpdate = () => {
                             placeholder="Enter new display name" 
                             className="w-full input input-bordered bg-base-300" 
                             required 
+                            disabled={isAuthLoading} // লোডিং চলাকালীন ইনপুট নিষ্ক্রিয়
                         />
                     </div>
                     
@@ -146,13 +168,14 @@ const ProfileUpdate = () => {
                             onChange={handleFileChange}
                             accept="image/*"
                             className="file-input file-input-bordered file-input-sm w-full bg-base-300" 
+                            disabled={isAuthLoading} // লোডিং চলাকালীন ইনপুট নিষ্ক্রিয়
                         />
                         <button 
                             type="button" 
                             onClick={handleImageUpload}
-                            // যদি কোনো ফাইল সিলেক্ট না করা হয় বা আপলোড চলছে, তবে বাটনটি নিষ্ক্রিয় থাকবে
                             className={`btn btn-accent w-full btn-sm mt-2 ${uploading ? 'btn-disabled' : ''}`}
-                            disabled={!imageFile || uploading}
+                            // uploading, imageFile না থাকলে, অথবা Auth লোডিং চলাকালীন নিষ্ক্রিয়
+                            disabled={!imageFile || uploading || isAuthLoading} 
                         >
                             {uploading ? 'Uploading...' : 'Upload Image'}
                         </button>
@@ -165,8 +188,13 @@ const ProfileUpdate = () => {
                     {/* Hidden input to pass the final photoURL for consistency */}
                     <input type="hidden" name="photoURL" value={photoURL} />
 
-                    <button type="submit" className="w-full btn btn-primary mt-6" disabled={uploading}>
-                        Save Changes
+                    <button 
+                        type="submit" 
+                        className="w-full btn btn-primary mt-6" 
+                        // uploading অথবা Auth লোডিং চলাকালীন নিষ্ক্রিয়
+                        disabled={uploading || isAuthLoading}
+                    >
+                        {isAuthLoading ? 'Loading User Data...' : 'Save Changes'}
                     </button>
                 </form>
             </div>

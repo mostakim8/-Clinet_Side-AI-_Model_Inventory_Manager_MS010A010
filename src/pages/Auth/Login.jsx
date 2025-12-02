@@ -81,8 +81,8 @@ export const Login = () => {
                             htmlFor="email-input"
                             className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
                             ${email || emailFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1 py-2 z-10 left-3' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-gray-400 opacity-80 pt-2 left-3' 
                             }`}
                         >
                             Email Address
@@ -102,11 +102,11 @@ export const Login = () => {
                     </div>
 
                     {/* Password Input Field */}
-                    <div className="form-control relative mb-6">
+                    <div className="form-control relative mb-2">
                         <label  htmlFor="password-input"
                         className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]
                             ${password || passwordFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1 py-2 z-10 left-3' 
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
                                 : 'text-gray-400 opacity-80 pt-4 left-3' 
                             }`}
                         >
@@ -118,7 +118,7 @@ export const Login = () => {
                           id='password-input'
                           type="password"
                           placeholder=""
-                          className="input w-full pt-6 pb-2 bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none"
+                          className="input w-full pt-2 pb-2 bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none"
 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -133,7 +133,7 @@ export const Login = () => {
                     <div className="form-control mt-1 mx-auto">
                         <button 
                             type="submit" 
-                            className={`btn btn-primary text-white font-bold ${isLoading ? 'btn-disabled' : ''}`}
+                            className={`btn btn-primary text-white font-bold rounded-xl ${isLoading ? 'btn-disabled' : ''}`}
                             disabled={isLoading}
                         >
                             Log In

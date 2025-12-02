@@ -11,7 +11,7 @@ const MOCK_MODEL = {
     _id: "60f71c4c8e7e1c0c8e7e1c0c",
     modelName: "Mock AI Data Model (Fallback)",
     description: "This is a placeholder model to allow UI testing of the purchase button when the backend server is not reachable. The purchase attempt will still try to contact the server.",
-    price: 9.99,
+    // price: 9.99,
     category: "Data Analysis",
     developerEmail: "mock.developer@example.com",
     purchased: 42,
@@ -25,7 +25,7 @@ const ToastNotification = ({ show, message, type, onClose }) => {
     const colorClass = type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-success';
     
     return (
-        <div className="toast toast-top toast-center z-[100]">
+        <div className="toast toast-top toast-center z-100">
             <div className={`alert ${colorClass} shadow-lg text-white`}>
                 <div>
                     <span className='font-semibold'>{message}</span>
@@ -168,7 +168,7 @@ export const ModelDetails = () => {
             const transactionData = {
                 modelId: model._id,
                 modelName: model.modelName,
-                price: model.price,
+                // price: model.price,
                 buyerEmail: user.email,
                 developerEmail: model.developerEmail, 
             };
@@ -259,7 +259,7 @@ export const ModelDetails = () => {
         buttonDisabled = true;
     } else {
         // Ready to Buy (Logged In, Not Purchased)
-        buttonContent = `Buy Now for $${model.price.toFixed(2)}`;
+        buttonContent = `Buy Now`;
         buttonClass += ' btn-accent';
         buttonDisabled = false;
     }
@@ -301,29 +301,70 @@ export const ModelDetails = () => {
                             />
                         </figure>
                         <div className="text-center py-4 bg-primary text-white rounded-lg shadow-xl">
-                            <p className="text-3xl font-extrabold">${model.price.toFixed(2)}</p>
+                            {/* <p className="text-3xl font-extrabold">${model.price.toFixed(2)}</p> */}
                             <p className="text-sm opacity-80 mt-1">One-time License Fee</p>
                         </div>
                     </div>
 
                     {/* Details and Description (Col 2 & 3) */}
                     <div className="lg:col-span-2">
-                        <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{model.modelName}</h1>
-                        <p className="text-xl text-gray-600 border-b pb-4 mb-4">{model.description}</p>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{model.modelName}</h1>
+
+            {/* description section */}
+                        <div className="border-b pb-4 mb-4">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Description</h3>
+                            <p className="text-lg text-gray-600">{model.description}</p>
+                        </div>
+
+
+                        <div className="grid grid-cols-2  gap-4 mb-6">
+
+                {/* row 1 */}
+                            <div className="bg-base-200 p-3 rounded-lg md:col-span-2">
+
+
+                                <p className="text-xs text-gray-500 font-medium">Use Case</p>
+                                <p className="text-lg font-semibold text-secondary break-words">{model.useCase || 'N/A'}</p>
+
+                                {/* <p className="text-xs text-gray-500 font-medium">Category</p>
+                                <p className="text-lg font-semibold text-secondary">{model.category}</p> */}
+                            </div>
+                    {/* data set section */}
+                 <div className="bg-base-200 p-3 rounded-lg md:col-span-2">
+                                <p className="text-xs text-gray-500 font-medium">Dataset</p>
+                                <p className="text-lg font-semibold text-secondary break-words">{model.dataset || 'N/A'}</p>
+                            </div>
+                    {/* row-2 */}
+
+                    {/* framework section */}
                             <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Framework</p>
+                                <p className="text-lg font-semibold text-secondary">{model.framework}</p>
+                            </div>
+
+     {/* Category section */}
+                        <div className="bg-base-200 p-3 rounded-lg">
                                 <p className="text-xs text-gray-500 font-medium">Category</p>
                                 <p className="text-lg font-semibold text-secondary">{model.category}</p>
                             </div>
-                            <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Developer</p>
-                                <p className="text-lg font-semibold text-secondary">{model.developerEmail}</p>
-                            </div>
+
+        {/* row-3 */}
+        {/* purchase count section */}
                             <div className="bg-base-200 p-3 rounded-lg">
                                 <p className="text-xs text-gray-500 font-medium">Purchase Count</p>
                                 <p className="text-lg font-semibold text-primary">{model.purchased || 0}</p>
                             </div>
+
+                            {/*  Developer section*/}
+                               <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 font-medium">Developer</p>
+                                <p className="text-lg font-semibold text-secondary truncate">{model.developerEmail}</p>
+                            </div>
+
+                  {/* row-4 */}
+
+                  {/* Model Id */}
                              <div className="bg-base-200 p-3 rounded-lg">
                                 <p className="text-xs text-gray-500 font-medium">Model ID</p>
                                 <p className="text-sm font-mono text-gray-700 truncate">{model._id}</p>
@@ -360,7 +401,9 @@ export const ModelDetails = () => {
                     <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
                         <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirm Purchase?</h3>
                         <p className="text-gray-600 mb-6">
-                            Are you sure you want to buy <strong>{model.modelName}</strong> for ${model.price.toFixed(2)}?
+                            Are you sure you want to buy <strong>{model.modelName}</strong> 
+                            {/* for ${model.price.toFixed(2)} */}
+                            ?
                         </p>
                         <div className="flex justify-end space-x-3">
                             <button 

@@ -149,11 +149,31 @@ export const ViewModels = () => {
                             </figure>
                             <div className="card-body p-6">
                                 <h2 className="card-title text-xl text-gray-900">{model.modelName}</h2>
-                                <p className="text-2xl font-bold text-accent">${parseFloat(model.price).toFixed(2)}</p>
+
+
+
+                                {/* add framework */}
+
+                                <div className=" space-y-1 text-sm text-gray-600">
+
+                        <p className='flex justify-between items-center'>
+                            
+                            <span className=' font-semibold'> Framework:
+                            </span>
+                            <span className='badge badge-neutral'>{model.framework} 
+                            </span>
+                             </p>
+                             {/* usecase add  */}
+                             <p className='flex justify-between items-center'>
+                                        <span className='font-semibold'>Use Case:</span> 
+                                        <span className='text-right max-w-[70%] truncate'>{model.useCase}</span>
+                                    </p>
+                                </div>
+                                {/* <p className="text-2xl font-bold text-accent">${parseFloat(model.price).toFixed(2)}</p> */}
                                 
                                 <div className="card-actions justify-end mt-4">
                                     <Link 
-                                        to={`/model/${model._id}`} 
+                                        to={`/app/model/${model._id}`} 
                                         className="btn btn-primary btn-outline w-full"
                                     >
                                         View Details

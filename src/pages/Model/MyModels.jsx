@@ -24,7 +24,7 @@ const MyModels = () => {
     // --- Custom Toast Notification ---
     const showToast = (message, type) => {
         setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
+        setTimeout(() => setToast({ show: false, message, type }), 4000);
     };
 
     const ToastNotification = () => {
@@ -102,7 +102,7 @@ const MyModels = () => {
                 const token = await currentUser.getIdToken(); 
                 
                 // Send DELETE request to the server
-                const res = await fetch(`${SERVER_BASE_URL}/a/models/${id}`, {
+                const res = await fetch(`${SERVER_BASE_URL}/models/${id}`, { // ⚠️ রুটটি ঠিক করা হলো: /a/models থেকে /models
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}` // ✅ FIX: Token included here
@@ -163,7 +163,7 @@ const MyModels = () => {
             <ToastNotification /> {/* ⭐ Toast component এখানে যোগ করা হলো ⭐ */}
             
             <h1 className="text-4xl font-bold text-center mb-10 text-secondary">
-                Uploaded Model Inventory ({myModels.length})
+                My Model Inventory ({myModels.length})
             </h1>
             <p className="text-center text-sm text-gray-500 mb-6">
                 Showing models created by: <span className='font-semibold text-primary'>{user?.email || 'N/A'}</span>
@@ -171,58 +171,89 @@ const MyModels = () => {
             
             {myModels.length === 0 ? (
                 <p className="text-center text-xl text-gray-500">You haven’t added any models yet.
-                 <Link to="/app/add-model" className='link link-primary font-bold'>Add One Now</Link>।
+                 <Link to="/app/add-model" className='link link-primary font-bold'> Add One Now</Link>।
                 </p>
             ) : (
-                <div className="overflow-x-auto max-w-5xl mx-auto bg-base-200 p-4 rounded-xl shadow-lg">
+                <div className="overflow-x-auto max-w-7xl mx-auto bg-base-200 p-4 rounded-xl shadow-lg">
                     <table className="table w-full">
-                        {/* Table Head: Added Image Column */}
+                        {/* Table Head: Added Framework, Use Case, and View Details */}
                         <thead>
-                            <tr className='text-lg text-primary'>
-                                <th>Image</th> {/* New Column */}
+                            <tr className='text-md text-primary'>
+                                <th>Image</th>
                                 <th>Name</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Actions</th>
+                                <th>Framework</th> {/* New Column */}
+                                <th>Use Case</th> {/* New Column */}
+                                <th>Created By</th> {/* New Column */}
+                                <th>Management</th> {/* Actions Column Renamed */}
                             </tr>
                         </thead>
-                        {/* Table Body: Added Image Display */}
+                        {/* Table Body */}
                         <tbody>
                             {myModels.map(model => (
                                 <tr key={model._id} className='hover:bg-base-300 transition duration-150'>
+                                    {/* Image */}
                                     <td>
                                         <div className="avatar">
                                             <div className="mask mask-squircle w-12 h-12 bg-base-300">
-                                                {/* Displaying Image: Uses model.imageUrl or a placeholder */}
                                                 <img 
-                                                    src={model.imageUrl || `https://ibb.co.com/Z0Xttnq`} 
+                                                    src={model.imageUrl || `https://placehold.co/100x100/CCCCCC/666666?text=No+Image`} 
                                                     alt={`Image of ${model.modelName}`} 
                                                     className="object-cover"
                                                 />
                                             </div>
                                         </div>
                                     </td>
-                                    <td className='font-medium'>{model.modelName}</td>
-                                    <td>{model.category}</td>
-                                    <td className='font-mono'>${model.price}</td>
-                                    <td className="flex gap-2">
+                                    {/* Name */}
+                                    <td className='truncate font-bold text-gray-700'>{model.modelName}</td>
+                                    
+                                    {/* Framework */}
+                                    <td>
+                                        <span className="badge badge-lg badge-outline badge-primary  truncate">
+                                            {model.framework || model.category || 'N/A'}
+                                        </span>
+                                    </td>
+                                    
+                                    {/* Use Case */}
+                                    <td>
+                                        <span className='text-sm text-gray-600 max-w-[150px] inline-block truncate'>
+                                            {model.useCase || 'General AI'}
+                                        </span>
+                                    </td>
+                                    
+                                    {/* Created By (Developer Email) */}
+                                    <td>
+                                        <span className='text-xs font-mono text-gray-500 max-w-[100px] inline-block truncate'>
+                                            {model.developerEmail}
+                                        </span>
+                                    </td>
+
+                                    {/* Management (View, Edit, Delete) */}
+                                    <td className="flex flex-col space-y-1">
+                                        
+                                        {/* View Details Button */}
+                                        <Link 
+                                            to={`/app/model/${model._id}`} 
+                                            className={`btn btn-sm btn-success text-white transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
+                                            disabled={isDeleting}
+                                        >
+                                            View Details
+                                        </Link>
+
                                         {/* Edit Button */}
                                         <Link 
                                             to={`/app/update-model/${model._id}`} 
-                                            // 🔑 Disable Edit button also when deleting
                                             className={`btn btn-info btn-sm text-white hover:opacity-80 transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
                                             disabled={isDeleting}
                                         >
                                             Edit
                                         </Link>
+                                        
                                         {/* Delete button with spinner logic */}
                                         <button 
                                             onClick={() => handleDelete(model._id, model.modelName)}
-                                            // 🔑 Spinner Logic Added
                                             className={`btn btn-error btn-sm text-white hover:opacity-80 transition duration-300 
                                                 ${isDeleting && deletingId === model._id ? 'loading' : ''}
                                             `}
-                                            // 🔑 Disable all buttons during deletion (or only the current one if not tracking all)
                                             disabled={isDeleting}
                                         >
                                             {/* Text is hidden when loading to show only the spinner */}

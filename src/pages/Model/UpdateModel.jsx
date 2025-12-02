@@ -15,8 +15,7 @@ const UpdateModel = () => {
     const { 
         _id, 
         modelName, 
-        description, 
-        price, 
+        description,  
         category, 
         imageUrl,
         useCase, // Assuming other optional fields
@@ -82,7 +81,7 @@ const UpdateModel = () => {
         // Collect updated form data
         const updatedModelName = form.modelName.value;
         const updatedDescription = form.description.value;
-        const updatedPrice = parseFloat(form.price.value);
+        // const updatedPrice = parseFloat(form.price.value);
         const updatedCategory = form.category.value;
         const updatedImageUrl = form.imageUrl.value; 
         
@@ -90,7 +89,7 @@ const UpdateModel = () => {
         const updatedModel = {
             modelName: updatedModelName,
             description: updatedDescription,
-            price: updatedPrice,
+            // price: updatedPrice,
             category: updatedCategory,
             imageUrl: updatedImageUrl, 
             useCase: form.useCase?.value || useCase,
@@ -142,7 +141,7 @@ const UpdateModel = () => {
     
     
     return (
-        <div className="max-w-4xl mx-auto my-10 p-6 shadow-2xl bg-base-100 rounded-2xl border-t-8 border-secondary">
+        <div className="max-w-4xl mx-auto my-10 p-6 shadow-2xl rounded-2xl border-t-8 border-secondary ">
             <Helmet>
                 <title>Update Model - {modelName}</title>
             </Helmet>
@@ -164,11 +163,10 @@ const UpdateModel = () => {
                 </div>
                 
                 {/* Price */}
-                <div className="form-control">
+                {/* <div className="form-control">
                     <label className="label"><span className="label-text font-semibold">Price (USD)</span></label>
-                    {/* toFixed(2) ensures two decimal places for currency format */}
                     <input type="number" step="0.01" name="price" defaultValue={parseFloat(price).toFixed(2)} className="input input-bordered" required />
-                </div>
+                </div> */}
 
                 {/* Category (Maps to Framework) */}
                 <div className="form-control">

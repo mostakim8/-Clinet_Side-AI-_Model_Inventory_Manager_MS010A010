@@ -116,7 +116,7 @@ export const Home = () => {
                       Latest AI Models </h4>
 
                     {/* Search Input Field (Right Side) */}
-                    <div className="w-full sm:w-50"> 
+                    {/* <div className="w-full sm:w-50"> 
                         <label className="input input-bordered flex items-center gap-2 w-full shadow-md bg-black-200 text-gray-400">
                         
                             <input
@@ -127,7 +127,7 @@ export const Home = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </label>
-                    </div>
+                    </div> */}
                 </div>
                 {/* END H4 and Search Bar Container */}
 
@@ -162,7 +162,7 @@ export const Home = () => {
                                 </figure>
                                 <div className="card-body p-6">
                                     <h2 className="card-title text-xl text-white">{model.modelName}</h2>
-                                    <p className="text-2xl font-bold text-accent">${parseFloat(model.price).toFixed(2)}</p>
+                                    <p className="text-2xl font-bold text-accent">{(model.framework)}</p>
                                     
                                     <div className="card-actions justify-end mt-4">
                                         <Link 

@@ -1,13 +1,9 @@
-// File: Register.jsx
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { updateProfile, createUserWithEmailAndPassword,signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import auth from '../../firebase/firebase.config'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import LogInLoader from '../../component/Loader/LogInLoader/LogInLoader.jsx';
-
-// 🛑 নতুন SuccessModal ইমপোর্ট করুন (আপনার পাথে পরিবর্তন করুন)
 import SuccessModal from '../../component/PopUp/Register/SuccessModal.jsx'; 
 import RegisterLoading from '../../component/Loader/Register/RegisterLoading.jsx';
 
@@ -15,19 +11,16 @@ import RegisterLoading from '../../component/Loader/Register/RegisterLoading.jsx
 const Register = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    // 🛑 নতুন স্টেট
     const [showSuccessModal, setShowSuccessModal] = useState(false); 
 
     const navigate = useNavigate();
     const googleProvider = new GoogleAuthProvider();
 
-    // 🔑 প্রতিটি ফিল্ডের জন্য পৃথক ফোকাস স্টেট
     const [nameFocused, setNameFocused] = useState(false);
     const [emailFocused, setEmailFocused] = useState(false);
     const [photoUrlFocused, setPhotoUrlFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
     
-    // 🔑 প্রতিটি ফিল্ডের জন্য পৃথক ভ্যালু স্টেট
     const [name, setName] = useState('');
     const [regEmail, setRegEmail] = useState('');
     const [regPhotoUrl, setRegPhotoUrl] = useState('');
@@ -74,10 +67,9 @@ const Register = () => {
             // 3. Log out 
             // await signOut(auth);
             
-            // 🛑 window.alert এর পরিবর্তে মডাল দেখানো
             setIsLoading(false); 
-            setShowSuccessModal(true); // মডালটি দেখাও
-            // navigate('/login'); // নেভিগেশন মডাল বাটনে ক্লিক করলে হবে
+            setShowSuccessModal(true); 
+            // navigate('/login'); 
             
 
         } catch (err) {
@@ -89,15 +81,13 @@ const Register = () => {
             }
         }
         finally{ 
-            // যদি সফল হয়, তবে আমরা উপরেই setIsLoading(false) সেট করেছি। 
-            // যদি ব্যর্থ হয়, তবে এখানে সেট করা হবে।
+            
             if (!showSuccessModal) { 
                 setIsLoading(false); 
             }
         }
     };
 
-    // 🛑 Modal থেকে Login পেজে নেভিগেট করার ফাংশন
     const handleRedirectToLogin = () => {
         setShowSuccessModal(false);
         navigate('/app');
@@ -131,7 +121,7 @@ const Register = () => {
         
         <div className="relative flex items-center justify-center min-h-screen ">
             {isLoading && <RegisterLoading/>}
-            {/* 🛑 Success Modal রেন্ডার করা হলো */}
+            {/*  Success Modal render */}
             {showSuccessModal && <SuccessModal onRedirect={handleRedirectToLogin} onClose={handleRedirectToLogin} />}
 
             <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
@@ -159,7 +149,7 @@ const Register = () => {
                         </div>
                     )}
 
-                    {/* 🚀 Input Fields (Name, Email, Photo URL, Password - Same as before) */}
+                    {/*  Input Fields (Name, Email, Photo URL, Password - Same as before) */}
                     {/* ... */}
                     <div className="form-control relative mb-2"> 
                         <label 
@@ -212,7 +202,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/* 🚀 Photo URL Input Field */}
+                    {/*  Photo URL Input Field */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="photoURL-input"
@@ -238,7 +228,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/* 🚀 Password Input Field */}
+                    {/*  Password Input Field */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="password-input"
@@ -283,7 +273,7 @@ const Register = () => {
                         className={` w-full btn bg-gray-700 border-gray-600 hover:bg-gray-600 text-white ${isLoading ? 'btn-disabled':''}`} 
                         disabled={isLoading} 
                     >
-                        {/* 🔑 SVG color adjusted for dark background */}
+                        {/*  SVG color adjusted for dark background */}
                         <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.343c-1.29 5.86-5.871 9.874-11.343 9.874-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-11.05 0-20 8.95-20 20s8.95 20 20 20c11.05 0 20-8.95 20-20c0-1.341-.138-2.65-.389-3.917z" /><path fill="#FF3D00" d="M6.306 14.693l6.571 4.819C14.655 15.108 18.9 12 24 12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-7.963 0-14.836 4.364-18.368 10.693z" /><path fill="#4CAF50" d="M24 44c5.108 0 9.771-1.638 13.313-4.481l-5.657-5.657C29.842 37.844 27.059 39 24 39c-5.448 0-10.129-4.32-11.343-9.874L6.306 33.307C9.838 39.636 16.709 44 24 44z" /><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.343c-.87 4.072-3.6 7.391-7.743 8.746-.232.084-.467.162-.702.234 3.498-3.045 5.735-7.464 5.735-12.28 0-1.341-.138-2.65-.389-3.917z" /></svg>
                         Sign up with Google (Gmail)
                     </button>        

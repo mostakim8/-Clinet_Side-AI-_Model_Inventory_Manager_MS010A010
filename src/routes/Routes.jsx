@@ -60,13 +60,14 @@ const Routes = createBrowserRouter([
                 index: true, 
                 element: <Home /> 
             },
-            {
-              path: "models", 
-              element:<ViewModels />
-            },
+           
             { 
                 path: "model/:id", 
                 element: <ModelDetails /> 
+            },
+             {
+              path: "models", 
+              element:<ViewModels />
             },
             { path: "add-model", element: <AddModel /> },
             { path: "my-models", element: <MyModels /> },

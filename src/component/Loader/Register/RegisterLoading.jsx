@@ -1,10 +1,7 @@
-// File: LoaderComponent.jsx (অথবা আপনার পছন্দের নাম)
-
 import { LogIn } from 'lucide-react';
 import React from 'react';
 
 const RegisterLoading = () => {
-    // এই স্টাইলগুলো সরাসরি SVG অ্যানিমেশনের জন্য দরকার, তাই আমরা এগুলো একটি <style> ট্যাগে রাখব।
     const cssStyles = `
         .trace-bg {
             stroke: #333;
@@ -51,7 +48,6 @@ const RegisterLoading = () => {
 
     return (
         <div className="main-container flex justify-center items-center w-full h-full">
-            {/* SVG স্টাইল যোগ করতে আমরা একটি <style> ট্যাগ ব্যবহার করছি */}
             <style>{cssStyles}</style>
             
             <div className="loader w-full h-full">

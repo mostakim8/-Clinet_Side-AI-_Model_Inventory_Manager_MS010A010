@@ -72,13 +72,22 @@ const Navbar = () => {
                                 )}
                             </div>
                         </div>
-                        <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                        <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52">
                             {/* 1. User Name/Email (Profile Info) */}
                             <li>
                                 <Link to="/app/profile-update" className="justify-between text-sm font-bold text-secondary">
-                                    {/* ইউজার নেম বা ইমেল দেখান */}
-                                    {user.displayName || user.email}
-                                    <span className="badge badge-primary badge-outline text-xs">Profile</span>
+
+                                <div className='flex flex-col items-start leading tight pr-2 min-w-0'>
+                                  {/* user name */}
+                                {user.displayName && <span className=' truncate text-sm font-extrabold text-white'> {user.displayName}</span>}
+
+                                {/* email  */}
+                                <span className={`truncate text-xs text-gray-400 ${!user.displayName && 'text-sm font-bold text-secondary'}`}>
+                                  {user.email}
+                                </span>
+                                </div>
+                                <span className='badge badge-primary badge-outline text-[10px] -mt-5
+                              '>Profile</span>
                                 </Link>
                             </li>
                             
@@ -91,7 +100,7 @@ const Navbar = () => {
                             
                             {/* 3. Purchase History Link (Only in Dropdown) */}
                             <li>
-                                <Link to="/app/purchasex-history">
+                                <Link to="/app/purchase-history">
                                     Model Purchase History
                                 </Link>
                             </li>
