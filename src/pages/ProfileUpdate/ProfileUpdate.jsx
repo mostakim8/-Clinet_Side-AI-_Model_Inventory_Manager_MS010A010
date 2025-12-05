@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
 // ⚠️ IMPORTANT: Firebase Storage imports need to be added here. E.g.:
-// import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+// import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; 
 // ⚠️ And you must initialize storage instance, e.g.:
 // const storage = getStorage(firebaseAppInstance); 
 
@@ -202,4 +202,4 @@ const ProfileUpdate = () => {
     );
 };
 
-export default ProfileUpdate;
+export default ProfileUpdate; 

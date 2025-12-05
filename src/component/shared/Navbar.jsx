@@ -42,7 +42,7 @@ const Navbar = () => {
                     <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
                         <svg xmlns="http://www.w3.0g/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
                     </div>
-                    <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52">
                         {navLinks}
                     </ul>
                 </div>
@@ -68,9 +68,11 @@ const Navbar = () => {
                             <div className="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
                                 {/* Email er prothom letter athoba user photo */}
                                 {user.photoURL ? (
-                                    <img src={user.photoURL} alt="Profile" className="rounded-full w-full h-full object-cover" />
+                                    <img src={user.photoURL} alt={user.displayName || user.email} className="rounded-full w-full h-full object-cover" />
                                 ) : (
-                                    user.email ? user.email[0].toUpperCase() : 'U'
+                                    <span className="text-xl">
+                                        {user.displayName ? user.displayName[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')}
+                                    </span>
                                 )}
                             </div>
                         </div>

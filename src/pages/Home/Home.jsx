@@ -34,6 +34,7 @@ export const Home = () => {
                 }
                 
                 const data = await response.json();
+                console.log("Fetched Models Data:", data); // এই লাইনটি যোগ করুন
                 setModels(data);
             } catch (err) {
                 console.error("Failed to fetch models:", err);
@@ -155,7 +156,7 @@ export const Home = () => {
                             <div key={model._id} className="card bg-gray-500 shadow-xl hover:shadow-2xl transition duration-300">
                                 <figure className="h-48 overflow-hidden">
                                     <img 
-                                        src={model.imageUrl || 'https://placehold.co/400x300/CCCCCC/666666?text=No+Image'} 
+                                        src={model.imageUrl || 'https://ibb.co/99kGZh1g?text=No+Image'} 
                                         alt={model.modelName} 
                                         className="w-full h-full object-cover"
                                     />

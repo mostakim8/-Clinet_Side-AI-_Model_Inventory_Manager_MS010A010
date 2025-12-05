@@ -4,11 +4,11 @@ import { useAuth } from '../providers/AuthProvider'; // Path shothik kora holo
 
 const PrivateRoute = ({ children }) => {
     // AuthProvider theke user ebong loading state nawa
-    const { user, loading } = useAuth();
+    const { user, isLoading } = useAuth();
     const location = useLocation();
 
     // 1. Authentication check cholche
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex justify-center items-center min-h-[70vh]">
                 {/* Tailwind/DaisyUI loading spinner */}

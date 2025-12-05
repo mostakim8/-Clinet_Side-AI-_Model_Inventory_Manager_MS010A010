@@ -59,9 +59,7 @@ const WelcomeScreen = () => {
                 Get Started
             </button>
             
-            <p className="mt-4 text-gray-500 text-sm">
-                Click "Get Started" to Login or Create an Account.
-            </p>
+            
 
            <AboutAIModelsSection/>
         </div>

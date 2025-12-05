@@ -8,7 +8,7 @@ import { Helmet } from 'react-helmet-async';
 const SERVER_BASE_URL = 'http://localhost:5001'; 
 
 const UpdateModel = () => {
-    // 1. Data load kora using useLoaderData (data-ti Routes.jsx-er loader function theke asche)
+    // Data load kora using useLoaderData
     const modelToUpdate = useLoaderData();
     
     // Destructure model properties
@@ -18,18 +18,24 @@ const UpdateModel = () => {
         description,  
         category, 
         imageUrl,
-        useCase, // Assuming other optional fields
+        useCase, 
         dataset 
     } = modelToUpdate || {}; 
     
     // Hooks and Context
     const { user } = useAuth();
     const navigate = useNavigate();
-    const auth = getAuth(); // Firebase Auth instance
+    const auth = getAuth(); 
 
     // State for UI management
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    
+    // 🔑 ফ্লোটিং লেবেলের জন্য ফোকাস স্টেটগুলো
+    const [modelNameFocused, setModelNameFocused] = useState(false);
+    const [imageUrlFocused, setImageUrlFocused] = useState(false);
+    const [descriptionFocused, setDescriptionFocused] = useState(false);
+
 
     // --- Custom Toast Notification Functions ---
     const showToast = (message, type) => {
@@ -58,13 +64,12 @@ const UpdateModel = () => {
     };
     // --- End Toast Functions ---
 
-    // Safety check: If data loading fails
     if (!modelToUpdate) {
         return <div className="text-center py-20 text-xl text-error">Error: Model data could not be loaded for editing. Please check the URL and server connectivity.</div>;
     }
 
 
-    // 2. Handle the PATCH (Update) form submission
+    // Handle the PATCH (Update) form submission
     const handleUpdateModel = async (e) => { 
         e.preventDefault();
         
@@ -73,42 +78,33 @@ const UpdateModel = () => {
             return;
         }
 
-        // 🔑 Start loading state
         setIsSubmitting(true);
-        
         const form = e.target;
         
-        // Collect updated form data
         const updatedModelName = form.modelName.value;
         const updatedDescription = form.description.value;
-        // const updatedPrice = parseFloat(form.price.value);
         const updatedCategory = form.category.value;
         const updatedImageUrl = form.imageUrl.value; 
         
-        // 3. Update payload
         const updatedModel = {
             modelName: updatedModelName,
             description: updatedDescription,
-            // price: updatedPrice,
             category: updatedCategory,
             imageUrl: updatedImageUrl, 
-            useCase: form.useCase?.value || useCase,
+            useCase: form.useCase?.value || useCase, // ধরে নেওয়া হচ্ছে useCase এবং dataset এর ইনপুট যোগ করা হয়নি
             dataset: form.dataset?.value || dataset,
         };
         
         try {
-            // 4. Get the Firebase ID Token
             const currentUser = auth.currentUser;
             if (!currentUser) throw new Error("User not authenticated.");
             
             const token = await currentUser.getIdToken(); 
 
-            // 5. Send secure PATCH request with the Model ID in the URL
             const res = await fetch(`${SERVER_BASE_URL}/models/${_id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 🔑 CRITICAL: Token attached for server-side verification and ownership check
                     'Authorization': `Bearer ${token}` 
                 },
                 body: JSON.stringify(updatedModel),
@@ -121,11 +117,9 @@ const UpdateModel = () => {
 
             const data = await res.json();
 
-            // Success check (checks for mongo modifiedCount or a returned object)
             if (data.modifiedCount > 0 || data.modelName) { 
                 showToast('Model Updated! Changes saved successfully.', 'success');
-                // Redirect user to their model list after a short delay
-                setTimeout(() => navigate('/my-models'), 500); 
+                setTimeout(() => navigate('/app/my-models'), 500); 
             } else {
                 showToast('No modifications were needed or made.', 'info');
             }
@@ -134,84 +128,154 @@ const UpdateModel = () => {
             console.error('Update Error:', error.message);
             showToast(`Update Failed. Details: ${error.message}`, 'error');
         } finally {
-            // 🔑 End loading state after operation completes
             setIsSubmitting(false);
         }
     };
     
     
     return (
-        <div className="max-w-4xl mx-auto my-10 p-6 shadow-2xl rounded-2xl border-t-8 border-secondary ">
+        // 💡 প্রধান কন্টেইনার: রেসপনসিভ, ডার্ক ব্যাকগ্রাউন্ড
+        <div className="min-h-screen flex items-center justify-center p-4 md:p-8" >
             <Helmet>
                 <title>Update Model - {modelName}</title>
             </Helmet>
             <ToastNotification /> 
             
-            <h1 className="text-4xl font-extrabold text-center mb-4 text-secondary">
-                Edit AI Model: <span className="text-primary">{modelName}</span>
-            </h1>
-            <p className="text-center text-gray-500 mb-8">
-                Model ID: <span className="font-mono text-sm bg-base-200 px-2 py-1 rounded">{_id}</span>
-            </p>
+            {/* 💡 ফর্ম কার্ড: মসৃণ শ্যাডো, ডার্ক ব্যাকগ্রাউন্ড এবং হালকা গ্রেডিয়েন্ট */}
+            <div className="w-full max-w-4xl mx-auto my-10 p-8 shadow-[0_0_40px_rgba(109,40,217,0.3)] rounded-xl bg-gradient-to-br from-[#131a2e] to-[#182035] text-white border border-indigo-900/50 transition duration-500">
             
-            <form onSubmit={handleUpdateModel} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h1 className="text-4xl font-extrabold text-center mb-2 text-pink-500">
+                    Edit AI Model: <span className="text-primary">{modelName}</span>
+                </h1>
+                <p className="text-center text-gray-400 mb-8">
+                    Model ID: <span className="font-mono text-sm bg-gray-700 px-2 py-1 rounded text-white">{_id}</span>
+                </p>
                 
-                {/* Model Name */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Model Name</span></label>
-                    <input type="text" name="modelName" defaultValue={modelName} className="input input-bordered" required />
-                </div>
-                
-                {/* Price */}
-                {/* <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Price (USD)</span></label>
-                    <input type="number" step="0.01" name="price" defaultValue={parseFloat(price).toFixed(2)} className="input input-bordered" required />
-                </div> */}
+                <form onSubmit={handleUpdateModel} className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+                    
+                    {/* Model Name (Float Label Design + Focus Effect) */}
+                    <div className="form-control relative mb-2"> 
+                        <label 
+                            htmlFor="modelName"
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            ${modelNameFocused || modelName 
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                            }`}
+                        >
+                            Model Name
+                        </label>
+                        <input type="text" 
+                            name="modelName" 
+                            id="modelName"
+                            defaultValue={modelName} 
+                            placeholder="" 
+                            // 💡 Focus Effect যোগ করা হলো
+                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-md focus:shadow-primary/30 focus:outline-none pt-4"
+                            onFocus={()=> setModelNameFocused(true)}
+                            onBlur={(e)=> setModelNameFocused(e.target.value.trim() !== '')}
+                            required 
+                        />
+                    </div>
+                    
+                    {/* Category (Select Input - Standard Label) */}
+                    <div className="form-control -mt-6">
+                        <label className="label"><span className="label-text font-semibold text-gray-400">Category (Framework)</span></label>
+                        <select 
+                            name="category" 
+                            // 💡 select এর জন্য ডার্ক থিম স্টাইল
+                            className="select select-bordered bg-gray-700 text-white border-gray-600 focus:border-primary focus:ring-primary ms-0 lg:ms-0" 
+                            defaultValue={category} 
+                            required
+                        >
+                            <option value="LLM">Large Language Model (LLM)</option>
+                            <option value="Image Gen">Image Generation</option>
+                            <option value="Audio/Speech">Audio/Speech</option>
+                            <option value="Data Analysis">Data Analysis</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    {/* Developer Email (Read-only) */}
+                    <div className="form-control">
+                        <label className="label"><span className="label-text font-semibold text-gray-400 ps-3">Developer Email</span></label>
+                        <input 
+                            type="email" 
+                            name="developerEmail" 
+                            defaultValue={user?.email || 'Loading...'} 
+                            readOnly 
+                            // 💡 Read-only ফিল্ডের জন্য স্পষ্ট ডিজাইন
+                            className="input input-bordered bg-gray-800 text-gray-400 cursor-not-allowed border-gray-700 " 
+                        />
+                    </div>
+                    
+                    {/* Image URL (Float Label Design + Highlight) */}
+                    <div className="form-control relative mt-6">
+                        <label 
+                            htmlFor="imageUrl"
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            ${imageUrlFocused || imageUrl 
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                            }`}
+                        >
+                            Image URL (ImgBB Link)
+                        </label>
+                        <input 
+                            type="url" 
+                            name="imageUrl" 
+                            id="imageUrl"
+                            defaultValue={imageUrl} 
+                            placeholder=""
+                            // 💡 Image URL-কে অ্যাকসেন্ট কালার দিয়ে হাইলাইট করা
+                            className="input w-full bg-transparent border-accent text-white border-2 focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-lg focus:shadow-accent/20 pt-4" 
+                            onFocus={()=> setImageUrlFocused(true)}
+                            onBlur={(e)=> setImageUrlFocused(e.target.value.trim() !== '')}
+                            required 
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            A visually appealing image is required for the inventory listing.
+                        </p>
+                    </div>
 
-                {/* Category (Maps to Framework) */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Category (Framework)</span></label>
-                    <select name="category" className="select select-bordered" defaultValue={category} required>
-                        <option value="LLM">Large Language Model (LLM)</option>
-                        <option value="Image Gen">Image Generation</option>
-                        <option value="Audio/Speech">Audio/Speech</option>
-                        <option value="Data Analysis">Data Analysis</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                
-                {/* Developer Email (Read-only) */}
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-semibold">Developer Email</span></label>
-                    <input type="email" name="developerEmail" defaultValue={user?.email || 'Loading...'} readOnly className="input input-bordered bg-gray-200" />
-                </div>
-                
-                {/* Image URL (Full Width) */}
-                <div className="form-control md:col-span-2">
-                    <label className="label"><span className="label-text font-semibold text-accent">Image URL</span></label>
-                    <input type="url" name="imageUrl" defaultValue={imageUrl} placeholder="Paste image link here" className="input input-bordered input-accent" required />
-                    <p className="text-xs text-gray-500 mt-1">
-                        A visually appealing image is required for the inventory listing.
-                    </p>
-                </div>
+                    {/* Description (Full Width - Float Label Design + Focus Effect) */}
+                    <div className="form-control md:col-span-2 relative mb-2">
+                        <label 
+                            htmlFor="description"
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            ${descriptionFocused || description
+                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                            }`}
+                        >
+                            Model Description
+                        </label>
+                        <textarea 
+                            name="description" 
+                            id="description"
+                            defaultValue={description} 
+                            placeholder="" 
+                            // 💡 Textarea Focus Effect যোগ করা হলো
+                            className="textarea textarea-bordered h-32 w-full bg-transparent border-gray-700 text-white border-gray-600 transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-md focus:shadow-primary/30 pt-8" 
+                            onFocus={()=> setDescriptionFocused(true)}
+                            onBlur={(e)=> setDescriptionFocused(e.target.value.trim() !== '')}
+                            required
+                        ></textarea>
+                    </div>
 
-                {/* Description (Full Width) */}
-                <div className="form-control md:col-span-2">
-                    <label className="label"><span className="label-text font-semibold">Model Description</span></label>
-                    <textarea name="description" defaultValue={description} className="textarea textarea-bordered h-32" required></textarea>
-                </div>
-
-                {/* Submit Button (Full Width) */}
-                <div className="form-control mt-6 md:col-span-2">
-                    <button 
-                        type="submit" 
-                        className={`btn btn-secondary w-full transition duration-300 ${isSubmitting ? 'loading' : ''}`}
-                        disabled={isSubmitting}
-                    >
-                         {isSubmitting ? 'Saving Changes...' : 'Save Model Updates'}
-                    </button>
-                </div>
-            </form>
+                    {/* Submit Button (Full Width) */}
+                    <div className="form-control mt-6 md:col-span-2">
+                        <button 
+                            type="submit" 
+                            // 💡 বাটন হোভার এফেক্ট
+                            className={`btn btn-secondary w-full text-white font-bold rounded-xl transition duration-300 transform hover:scale-[1.01] shadow-lg hover:shadow-secondary/50 ${isSubmitting ? 'loading' : ''}`}
+                            disabled={isSubmitting}
+                        >
+                             {isSubmitting ? 'Saving Changes...' : 'Save Model Updates'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

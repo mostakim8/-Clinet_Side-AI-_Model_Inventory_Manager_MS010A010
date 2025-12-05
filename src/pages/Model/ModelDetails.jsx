@@ -66,9 +66,18 @@ export const ModelDetails = () => {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+    // 🔑🔑 নতুন স্টেট এবং কনস্ট্যান্ট যোগ করা হলো 🔑🔑
+    const [isExpanded, setIsExpanded] = useState(false); 
+    const DESCRIPTION_LIMIT = 200; // বর্ণনা কত অক্ষর পর্যন্ত ছোট করে দেখানো হবে
+
     const showToast = (message, type) => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message, type }), 4000);
+    };
+
+    // 🔑🔑 বর্ণনা টগল করার ফাংশন 🔑🔑
+    const toggleDescription = () => {
+        setIsExpanded(!isExpanded);
     };
 
     // Purchase Status Check Logic (Firestore)
@@ -174,7 +183,7 @@ export const ModelDetails = () => {
             };
             
             // Call the purchase endpoint
-            // ✅ FIX: /purchase-model routeটি এখন সার্ভারে POST মেথডে ডিফাইন করা হয়েছে
+            // ✅ FIX: /purchase-model routeটি এখন সার্ভারে POST মেথডে ডিফাইন করা হয়েছে
             const res = await fetch(`${SERVER_BASE_URL}/purchase-model`, {
                 method: 'POST',
                 headers: {
@@ -314,7 +323,29 @@ export const ModelDetails = () => {
             {/* description section */}
                         <div className="border-b pb-4 mb-4">
                             <h3 className="text-xl font-semibold text-gray-700 mb-2">Description</h3>
-                            <p className="text-lg text-gray-600">{model.description}</p>
+                            
+                            {/* 🔑🔑 ফিক্সড Description রেন্ডারিং লজিক 🔑🔑 */}
+                            {model.description && model.description.length > DESCRIPTION_LIMIT ? (
+                                <>
+                                    <p className="text-lg text-gray-600 whitespace-pre-wrap">
+                                        {/* isExpanded এর উপর ভিত্তি করে সংক্ষিপ্ত বা পূর্ণ বর্ণনা দেখানো */}
+                                        {isExpanded 
+                                            ? model.description 
+                                            : model.description.substring(0, DESCRIPTION_LIMIT) + '...'
+                                        }
+                                    </p>
+                                    <button 
+                                        onClick={toggleDescription}
+                                        className="text-primary hover:text-pink-500 font-bold mt-2 text-sm transition duration-200"
+                                    >
+                                        {isExpanded ? 'Show Less' : 'See More'}
+                                    </button>
+                                </>
+                            ) : (
+                                // যদি বর্ণনা ছোট হয়, তবে পুরোটা দেখাবে
+                                <p className="text-lg text-gray-600 whitespace-pre-wrap">{model.description}</p>
+                            )}
+                            {/* 🔑🔑 ফিক্সড Description রেন্ডারিং লজিক শেষ 🔑🔑 */}
                         </div>
 
 
@@ -356,7 +387,7 @@ export const ModelDetails = () => {
                                 <p className="text-lg font-semibold text-primary">{model.purchased || 0}</p>
                             </div>
 
-                            {/*  Developer section*/}
+                            {/* Developer section*/}
                                <div className="bg-base-200 p-3 rounded-lg">
                                 <p className="text-xs text-gray-500 font-medium">Developer</p>
                                 <p className="text-lg font-semibold text-secondary truncate">{model.developerEmail}</p>
@@ -382,7 +413,7 @@ export const ModelDetails = () => {
                             </button>
                             {/* Link to history if purchased */}
                             {hasPurchased && (
-                                <Link to="/purchase-history" className="btn btn-sm btn-link mt-2 block text-center">
+                                <Link to="/app/purchase-history" className="btn btn-sm btn-link mt-2 block text-center">
                                     Go to My Purchase History
                                 </Link>
                             )}

@@ -82,7 +82,7 @@ export const Login = () => {
                             className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
                             ${email || emailFocused
                                 ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-2 left-3' 
+                                : 'text-gray-400 opacity-80 pt-4 left-3' 
                             }`}
                         >
                             Email Address

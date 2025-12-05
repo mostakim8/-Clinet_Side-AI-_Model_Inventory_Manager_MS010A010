@@ -7,7 +7,7 @@ import {
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signOut,
-    updateProfile // ✅ updateProfile import করা আছে 
+    updateProfile, // ✅ updateProfile import করা আছে 
 } from 'firebase/auth';
 
 import { auth, db } from '../firebase/firebase.config'; 
@@ -31,12 +31,11 @@ export const AuthProvider = ({ children }) => {
     
     // Initial Authentication and State Listener
     useEffect(() => {
-        let isCancelled = false;
+        // let isCancelled = false;
         
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (!isCancelled) {
                 setUser(currentUser);
-            }
+            setIsLoading(false)
         });
 
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -50,9 +49,9 @@ export const AuthProvider = ({ children }) => {
                 }
             } 
             
-            if (!isCancelled) {
-                setIsLoading(false);
-            }
+            // if (!isCancelled) {
+            //     setIsLoading(false);
+            // }
         };
 
         if (isLoading) {
@@ -60,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         }
         
         return () => {
-             isCancelled = true;
+            //  isCancelled = true;
              unsubscribe(); // Cleanup function
         };
     }, []);
@@ -90,7 +89,7 @@ export const AuthProvider = ({ children }) => {
                 await currentUser.reload(); 
                 
                 // 3. স্টেট আপডেট: নতুন user data দিয়ে setUser স্টেট আপডেট করা
-                setUser(auth.currentUser);
+                setUser({...auth.currentUser});
                 return; 
 
             } catch (error) {
