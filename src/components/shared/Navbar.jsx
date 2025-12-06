@@ -74,7 +74,7 @@ const Navbar = () => {
                             <li>
                                 <Link to="/app/profile-update" className="justify-between text-sm font-bold text-secondary">
 
-                                <div className='flex flex-col items-start leading tight pr-2'>
+                                <div className='flex flex-col items-start leading tight pr-2 -mr-14'>
                                   {/* user name */}
                                 {user.displayName && <span className=' truncate text-sm font-extrabold text-white'> {user.displayName}</span>}
 
@@ -83,12 +83,12 @@ const Navbar = () => {
                                   {user.email}
                                 </span>
                                 </div>
-                                <span className='badge badge-primary badge-outline text-[10px] -mt-5
+                                <span className='badge badge-primary badge-outline text-[10px] -mt-5 
                               '>Profile</span>
                                 </Link>
                             </li>
                             
-                            {/* 2. My Models Dropdown*/}
+                            {/* My Models Dropdown*/}
                             <li>
                                 <Link to="/app/my-models">
                                     My Models
