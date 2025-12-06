@@ -11,10 +11,9 @@ import routes from './routes/Routes.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* Wrap the entire application in the AuthProvider */}
+    
     <HelmetProvider> 
       <AuthProvider>
-      {/* Provide the router to the application */}
       <RouterProvider router={routes} />
     </AuthProvider>
     </HelmetProvider>

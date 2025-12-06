@@ -4,8 +4,13 @@ const RegistorBtn = ({ onClick, children }) => {
   return (
     <button 
         onClick={onClick}
-        // hover:text-white (Hover Text), before:bg-pink-600 (Hover BG Color)
-        className=" text-sm flex justify-center gap-2 items-center mx-auto shadow-xl bg-primary text-white border-primary lg:font-semibold isolation-auto before:absolute before:w-full before:h-full before:block before:transition-all before:duration-700 before:hover:w-full before:-left-full before:hover:left-0 before:rounded-full  before:bg-pink-900 hover:bg-pink-500 hover:text-white hover:border-pink-400 before:-z-10 before:hover:scale-150 before:hover:duration-700 relative z-10 px-4 py-2 overflow-hidden border-2 rounded-xl group h-10"
+        
+        className=" px-4 py-2 h-10 text-sm rounded-lg
+        flex items-center gap-2 justify-center mx-auto
+        bg-primary text-white border border-primary
+        hover:bg-pink-600 hover:border-pink-600
+        transition-all duration-300
+        shadow-md"
     >
         {children || 'Registration'}
         

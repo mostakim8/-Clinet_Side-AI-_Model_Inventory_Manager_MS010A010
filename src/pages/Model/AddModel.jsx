@@ -24,11 +24,6 @@ export const AddModel = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // console.log("Current User Object:", user);
-        // console.log("Is getIdToken function available?", typeof user?.getIdToken === 'function');
-
-
-        //  firebase token fetching logic
         let token = null;
 
         if (user && typeof user.getIdToken === 'function') {
@@ -63,7 +58,7 @@ export const AddModel = () => {
             imageUrl: form.imageUrl.value,
             category: form.category.value,
             developerEmail: user?.email, 
-            // price: parseFloat(form.price.value) || 0, // যদি price ইনপুট থাকে
+            
         };
 
         const addToastId = toast.loading("Adding model to inventory...");
@@ -83,7 +78,7 @@ export const AddModel = () => {
                 throw new Error(errorData.message || `Failed with status: ${response.status}`);
             }
 
-            // সফল হলে
+            // model add success
             toast.success('Model added successfully!', { id: addToastId });
             form.reset();
             navigate('/app/my-models'); 
@@ -100,16 +95,15 @@ export const AddModel = () => {
     return (
         <div className=" min-h-screen flex items-center " >
 
-
             <div className="w-full max-w-5xl justify-center p-4 rounded-xl bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] border border-transparent hover:border-indigo-80 transition duration-500 mx-auto">
                 <h2 className="text-3xl font-bold text-center text-primary mb-2 mt-6">Add New AI Model</h2>
                 
                 <form 
                     onSubmit={handleAddModel} 
-                    className=" card-body grid grid-cols-1 md:grid-cols-2 gap-8 p-10  mx-auto"
+                    className="card-body grid grid-cols-1 md:grid-cols-2 gap-8 p-10  mx-auto"
                 >
                     
-                    {/* Model Name (Float Label Design) */}
+                    {/* Model Name */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="modelName"
@@ -132,7 +126,7 @@ export const AddModel = () => {
                         />
                     </div>
 
-                    {/* Framework (Float Label Design) */}
+                    {/* Framework */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="framework"
@@ -155,7 +149,7 @@ export const AddModel = () => {
                         />
                     </div>
 
-                    {/* Use Case (Float Label Design) */}
+                    {/* Use Case */}
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="useCase"
@@ -178,7 +172,7 @@ export const AddModel = () => {
                         />
                     </div>
 
-                    {/* Dataset (Float Label Design) */}
+                    {/* Dataset */}
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="dataset"
@@ -203,7 +197,7 @@ export const AddModel = () => {
 
                    
 
-                    {/* Image URL (Float Label Design) */}
+                    {/* Image URL */}
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="imageUrl"
@@ -228,7 +222,7 @@ export const AddModel = () => {
                     </div>
 
 
-                    {/* Category (Regular Select Design) */}
+                    {/* Category */}
                     <div className="form-control -mt-5 lg:mt-0">
                         <label className="label"><span className="label-text font-semibold text-gray-400">Category</span></label>
                         <select name="category" className="select select-bordered bg-transparent border-gray-700 text-gray-100 border rounded-lg lg:ms-3 w-full lg:w-91" required >
@@ -240,7 +234,7 @@ export const AddModel = () => {
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    {/* Description (Textarea - Full Width, Float Label Design) */}
+                    {/* Description */}
                     <div className="form-control md:col-span-2 relative mb-2">
                         <label 
                             htmlFor="description"
@@ -263,7 +257,7 @@ export const AddModel = () => {
                         ></textarea>
                     </div>
 
-                    {/* Developer Email (Read-only) */}
+                    {/* Developer Email */}
                     <div className="form-control md:col-span-1 ">
                         <label className="label"><span className="label-text font-semibold text-gray-400">Developer Email (Read Only)</span></label>
                         <input 
@@ -276,7 +270,7 @@ export const AddModel = () => {
                     </div>
                     
  
-                    {/* Submit Button (Full Width) */}
+                    {/* Submit Button  */}
                     <div className="form-control mt-6 md:col-span-2">
                        <button type="submit"
                              className={`w-full bg-linear-to-r from-indigo-500 to-blue-500 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] 

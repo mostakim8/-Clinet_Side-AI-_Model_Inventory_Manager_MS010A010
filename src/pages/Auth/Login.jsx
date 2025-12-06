@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider.jsx'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'; 
-import RegistorBtn from '../../component/buttons/RegistorBtn.jsx';
-import LogInLoader from '../../component/Loader/LogInLoader/LogInLoader.jsx';
+import RegistorBtn from '../../components/buttons/RegistorBtn.jsx';
+import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
 // import ParticlesBackground from '../../component/Form Img/ParticlesBackground.jsx'; 
 
 
@@ -27,7 +27,7 @@ export const Login = () => {
         try {
             await login(email, password);
             alertUser('Login successful! Redirecting...', 'success');
-            navigate('/app'); //latest change 1
+            navigate('/app'); 
             
         } catch (err) {
             console.error(err);
@@ -57,9 +57,11 @@ export const Login = () => {
                 
                 <form className="card-body" onSubmit={handleSubmit}>
                     
-                    {/* 🔑 Lottie Animation */}
+                    {/*Lottie Animation */}
                     <h2 className="card-title text-primary justify-center">
-                        <div style={{ width: '250px', height: '250px', marginBottom: '-70px', marginTop: '-80px' }}>
+                        <div style={{ 
+                            width: '250px', 
+                            height: '250px', marginBottom: '-70px', marginTop: '-80px' }}>
                             <DotLottieReact
                                 src="https://lottie.host/ad7cb7f5-fa39-4825-bfdb-1aba3b76dc70/bMGjzqthd6.lottie"
                                 loop
@@ -75,7 +77,7 @@ export const Login = () => {
                         </div>
                     )}
 
-                    {/* Email Input Field */}
+                    {/* Email Input  */}
                     <div className="form-control relative mb-6"> 
                         <label 
                             htmlFor="email-input"
@@ -101,7 +103,7 @@ export const Login = () => {
                         />
                     </div>
 
-                    {/* Password Input Field */}
+                    {/* Password Input */}
                     <div className="form-control relative mb-2">
                         <label  htmlFor="password-input"
                         className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]
@@ -112,7 +114,6 @@ export const Login = () => {
                         >
                             Password
                         </label>
-
 
                         <input
                           id='password-input'
@@ -128,8 +129,6 @@ export const Login = () => {
                         />
                     </div>
 
-
-
                     <div className="form-control mt-1 mx-auto">
                         <button 
                             type="submit" 
@@ -142,13 +141,12 @@ export const Login = () => {
                     
                     <div className="text-center mt-4">
                         <p className="text-sm text-gray-600 mb-4">
-                            Don't have an account?
-                           
+                            Don't have an account? 
                         </p>
+
                          <RegistorBtn onClick={()=>navigate ('/register')} 
                              > Registration
-                        </RegistorBtn>
-                        
+                        </RegistorBtn>  
                     </div>
                 </form>
             </div>

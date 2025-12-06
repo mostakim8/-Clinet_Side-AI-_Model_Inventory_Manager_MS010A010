@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../providers/AuthProvider'; // Path corrected
+import { useAuth } from '../../providers/AuthProvider'; 
 import { getAuth } from "firebase/auth"; 
 import { Link } from 'react-router-dom';
 
@@ -10,17 +10,16 @@ const MyModels = () => {
     const [myModels, setMyModels] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // 🔑 ADDED: Deleting state for button spinner
+    
     const [isDeleting, setIsDeleting] = useState(false); 
     const [deletingId, setDeletingId] = useState(null); 
 
-    // Custom Toast/Notification state
+   //toast
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     
-    // Firebase Auth Instance (Component-er shurute nite hobe)
     const auth = getAuth(); 
 
-    // --- Custom Toast Notification ---
+    //Toast Notification
     const showToast = (message, type) => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message, type }), 4000);
@@ -42,7 +41,6 @@ const MyModels = () => {
         );
     };
 
-    // --- Core function to fetch data for the logged-in user ---
     const fetchMyModels = () => {
          if (!user?.email) {
             setLoading(false);
@@ -88,25 +86,23 @@ const MyModels = () => {
         const isConfirmed = window.confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`);
 
         if (isConfirmed) {
-            //  Set loading state for the specific button
             setIsDeleting(true);
             setDeletingId(id);
 
             try {
-                // CRITICAL: Firebase theke ID Token toiri kora hochche
                 const token = await currentUser.getIdToken(); 
                 
-                // Send DELETE request to the server
+                // Send DELETE request server
                 const res = await fetch(`${SERVER_BASE_URL}/models/${id}`, { 
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}` // ✅ FIX: Token included here
+                        'Authorization': `Bearer ${token}` 
                     }
                 });
 
                 if (!res.ok) {
                     const err = await res.json();
-                    // Unauthorized (401) or Forbidden (403) check
+                    // "401" or "403" check
                     if (res.status === 401 || res.status === 403) {
                          throw new Error(err.message || 'Unauthorized access. Token issue or ownership mismatch.');
                     }
@@ -126,15 +122,12 @@ const MyModels = () => {
                 console.error("Delete Error:", error);
                 showToast(`Model could not be deleted. Details: ${error.message}`, 'error');
             } finally {
-                // Reset loading state
                 setIsDeleting(false);
                 setDeletingId(null);
             }
         }
     };
 
-
-    //  Data Fetching Spinner (Already correct)
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
@@ -165,18 +158,18 @@ const MyModels = () => {
             ) : (
                 <div className="overflow-x-auto max-w-7xl mx-auto bg-base-200 p-4 rounded-xl shadow-lg">
                     <table className="table w-full">
-                        {/* Table Head: Added Framework, Use Case, and View Details */}
+                        
                         <thead>
                             <tr className='text-md text-primary'>
                                 <th>Image</th>
                                 <th>Name</th>
-                                <th>Framework</th> {/* New Column */}
-                                <th>Use Case</th> {/* New Column */}
-                                <th>Created By</th> {/* New Column */}
-                                <th>Management</th> {/* Actions Column Renamed */}
+                                <th>Framework</th> 
+                                <th>Use Case</th> 
+                                <th>Created By</th> 
+                                <th>Management</th> 
                             </tr>
                         </thead>
-                        {/* Table Body */}
+
                         <tbody>
                             {myModels.map(model => (
                                 <tr key={model._id} className='hover:bg-base-300 transition duration-150'>
@@ -209,17 +202,16 @@ const MyModels = () => {
                                         </span>
                                     </td>
                                     
-                                    {/* Created By (Developer Email) */}
+                                    {/*Developer Email*/}
                                     <td>
                                         <span className='text-xs font-mono text-gray-500 max-w-[100px] inline-block truncate'>
                                             {model.developerEmail}
                                         </span>
                                     </td>
 
-                                    {/* Management (View, Edit, Delete) */}
+                                    {/* View, Edit, Delete */}
                                     <td className="flex flex-col space-y-1">
                                         
-                                        {/* View Details Button */}
                                         <Link 
                                             to={`/app/model/${model._id}`} 
                                             className={`btn btn-sm btn-success text-white transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
@@ -237,7 +229,7 @@ const MyModels = () => {
                                             Edit
                                         </Link>
                                         
-                                        {/* Delete button with spinner logic */}
+                                        {/* Delete button*/}
                                         <button 
                                             onClick={() => handleDelete(model._id, model.modelName)}
                                             className={`btn btn-error btn-sm text-white hover:opacity-80 transition duration-300 
@@ -245,7 +237,6 @@ const MyModels = () => {
                                             `}
                                             disabled={isDeleting}
                                         >
-                                            {/* Text is hidden when loading to show only the spinner */}
                                             {isDeleting && deletingId === model._id ? '' : 'Delete'}
                                         </button>
                                     </td>

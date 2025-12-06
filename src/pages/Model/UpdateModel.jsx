@@ -4,14 +4,13 @@ import { useAuth } from '../../providers/AuthProvider';
 import { getAuth } from "firebase/auth";
 import { Helmet } from 'react-helmet-async';
 
-// Server base URL must match the backend's address
 const SERVER_BASE_URL = 'http://localhost:5001'; 
 
 const UpdateModel = () => {
-    // Data load kora using useLoaderData
+    
     const modelToUpdate = useLoaderData();
     
-    // Destructure model properties
+    // model items
     const { 
         _id, 
         modelName, 
@@ -22,22 +21,17 @@ const UpdateModel = () => {
         dataset 
     } = modelToUpdate || {}; 
     
-    // Hooks and Context
     const { user } = useAuth();
     const navigate = useNavigate();
     const auth = getAuth(); 
 
-    // State for UI management
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     
-    // 🔑 ফ্লোটিং লেবেলের জন্য ফোকাস স্টেটগুলো
     const [modelNameFocused, setModelNameFocused] = useState(false);
     const [imageUrlFocused, setImageUrlFocused] = useState(false);
     const [descriptionFocused, setDescriptionFocused] = useState(false);
 
-
-    // --- Custom Toast Notification Functions ---
     const showToast = (message, type) => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: '' }), 4000);
@@ -62,14 +56,11 @@ const UpdateModel = () => {
             </div>
         );
     };
-    // --- End Toast Functions ---
 
     if (!modelToUpdate) {
         return <div className="text-center py-20 text-xl text-error">Error: Model data could not be loaded for editing. Please check the URL and server connectivity.</div>;
     }
 
-
-    // Handle the PATCH (Update) form submission
     const handleUpdateModel = async (e) => { 
         e.preventDefault();
         
@@ -91,7 +82,7 @@ const UpdateModel = () => {
             description: updatedDescription,
             category: updatedCategory,
             imageUrl: updatedImageUrl, 
-            useCase: form.useCase?.value || useCase, // ধরে নেওয়া হচ্ছে useCase এবং dataset এর ইনপুট যোগ করা হয়নি
+            useCase: form.useCase?.value || useCase, 
             dataset: form.dataset?.value || dataset,
         };
         
@@ -151,7 +142,7 @@ const UpdateModel = () => {
                 
                 <form onSubmit={handleUpdateModel} className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
                     
-                    {/* Model Name (Float Label Design + Focus Effect) */}
+                    {/* Model Name */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="modelName"
@@ -168,7 +159,7 @@ const UpdateModel = () => {
                             id="modelName"
                             defaultValue={modelName} 
                             placeholder="" 
-                            //  Focus Effect add
+                            //  add Focus Effect 
                             className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-md focus:shadow-primary/30 focus:outline-none pt-4"
                             onFocus={()=> setModelNameFocused(true)}
                             onBlur={(e)=> setModelNameFocused(e.target.value.trim() !== '')}
@@ -176,7 +167,7 @@ const UpdateModel = () => {
                         />
                     </div>
                     
-                    {/* Category (Select Input - Standard Label) */}
+                    {/* Category */}
                     <div className="form-control -mt-6">
                         <label className="label"><span className="label-text font-semibold text-gray-400">Category (Framework)</span></label>
                         <select 
@@ -193,7 +184,7 @@ const UpdateModel = () => {
                         </select>
                     </div>
                     
-                    {/* Developer Email (Read-only) */}
+                    {/* Developer Email*/}
                     <div className="form-control">
                         <label className="label"><span className="label-text font-semibold text-gray-400 ps-3">Developer Email</span></label>
                         <input 
@@ -205,7 +196,7 @@ const UpdateModel = () => {
                         />
                     </div>
                     
-                    {/* Image URL (Float Label Design + Highlight) */}
+                    {/* Image*/}
                     <div className="form-control relative mt-6">
                         <label 
                             htmlFor="imageUrl"
@@ -233,7 +224,7 @@ const UpdateModel = () => {
                         </p>
                     </div>
 
-                    {/* Description (Full Width - Float Label Design + Focus Effect) */}
+                    {/* Description */}
                     <div className="form-control md:col-span-2 relative mb-2">
                         <label 
                             htmlFor="description"
@@ -250,15 +241,15 @@ const UpdateModel = () => {
                             id="description"
                             defaultValue={description} 
                             placeholder="" 
-                            //  Textarea Focus Effect add
-                            className="textarea textarea-bordered h-32 w-full bg-transparent border-gray-700 text-white border-gray-600 transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-md focus:shadow-primary/30 pt-8" 
+                          
+                            className="textarea textarea-bordered h-32 w-full bg-transparent border-gray-700 text-white duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-md focus:shadow-primary/30 pt-8" 
                             onFocus={()=> setDescriptionFocused(true)}
                             onBlur={(e)=> setDescriptionFocused(e.target.value.trim() !== '')}
                             required
                         ></textarea>
                     </div>
 
-                    {/* Submit Button (Full Width) */}
+                    {/* Submit Button */}
                     <div className="form-control mt-6 md:col-span-2">
                         <button 
                             type="submit" 

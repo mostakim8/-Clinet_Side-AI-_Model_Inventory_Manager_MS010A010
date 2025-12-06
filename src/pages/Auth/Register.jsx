@@ -1,11 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { updateProfile, createUserWithEmailAndPassword,signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import auth from '../../firebase/firebase.config'; 
+import auth from '../../firebase/firebase.config.js'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import LogInLoader from '../../component/Loader/LogInLoader/LogInLoader.jsx';
-import SuccessModal from '../../component/PopUp/Register/SuccessModal.jsx'; 
-import RegisterLoading from '../../component/Loader/Register/RegisterLoading.jsx';
+import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
+import SuccessModal from '../../components/PopUp/Register/SuccessModal.jsx'; 
+import RegisterLoading from '../../components/Loader/Register/RegisterLoading.jsx';
 
 
 const Register = () => {
@@ -30,13 +30,13 @@ const Register = () => {
         e.preventDefault();
         setError(''); 
         setIsLoading(true);
-        // ... (Validation code same as before)
+        // Validation code
         const formName = name; 
         const formEmail = regEmail;
         const formPassword = regPassword;
         const formPhotoURL = regPhotoUrl; 
         
-        // --- Password Validation ---
+        //Password Validation 
         if (formPassword.length < 6) {
             setError('Password must be at least 6 characters long.');
             setIsLoading(false);
@@ -54,17 +54,17 @@ const Register = () => {
         }
         
         try {
-            // 1. Create User
+            // Create User
             const userCredential = await createUserWithEmailAndPassword(auth, formEmail, formPassword);
             const user = userCredential.user;
 
-            // 2. Update Profile (Add Name and PhotoURL)
+            // Update Profile 
             await updateProfile(user, {
                 displayName: formName,
                 photoURL: formPhotoURL,
             });
             
-            // 3. Log out 
+            // Log out 
             // await signOut(auth);
             
             setIsLoading(false); 
@@ -94,7 +94,7 @@ const Register = () => {
     };
 
 
-    //Google Sign In Handler
+    //Google SignIn 
     const handleGoogleSignIn=async()=>{
         setError('');
         setIsLoading(true); 
@@ -104,7 +104,6 @@ const Register = () => {
             setIsLoading(false);
         setShowSuccessModal(true);
         }
-
 
         catch (err){
             console.error("Google Sign-In Error:",err);
@@ -121,7 +120,6 @@ const Register = () => {
         
         <div className="relative flex items-center justify-center min-h-screen ">
             {isLoading && <RegisterLoading/>}
-            {/*  Success Modal render */}
             {showSuccessModal && <SuccessModal onRedirect={handleRedirectToLogin} onClose={handleRedirectToLogin} />}
 
             <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
@@ -130,7 +128,9 @@ const Register = () => {
                     
                     {/* Lottie Animation */}
                    <h2 className="card-title  justify-center">
-                        <div style={{ width: '290px', height: '250px', marginBottom: '-55px', marginTop: '-50px' }}>
+                        <div style={{ 
+                            width: '290px', 
+                            height: '250px', marginBottom: '-55px', marginTop: '-50px' }}>
                             <DotLottieReact
                             src="https://lottie.host/af20f4e8-5f25-4a6a-be89-5f8f152ed2f1/VdKzLjZPfm.lottie"
                             loop
@@ -139,9 +139,7 @@ const Register = () => {
                         </div>
                     </h2>
                 
-                    <h2 className="text-3xl font-bold pt-6 text-center text-primary mb-4">Create Account</h2>
-
-
+                    <h2 className="text-center text-primary text-3xl font-bold pt-6 mb-4">Create Account</h2>
                     {error && (
                         <div role="alert" className="alert alert-error mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -149,8 +147,6 @@ const Register = () => {
                         </div>
                     )}
 
-                    {/*  Input Fields (Name, Email, Photo URL, Password - Same as before) */}
-                    {/* ... */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="name-input"
@@ -176,7 +172,7 @@ const Register = () => {
                         />
                     </div>
                     
-                    {/* 🚀 Email Input Field */}
+                    {/* Email Input*/}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="email-input"
@@ -202,7 +198,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/*  Photo URL Input Field */}
+                    {/*  Photo URL Input */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="photoURL-input"
@@ -228,7 +224,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/*  Password Input Field */}
+                    {/*  Password Input */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="password-input"
@@ -262,9 +258,8 @@ const Register = () => {
                     </div>
 
 
-                {/* Google Sign In Option  */}
+                {/* Google SignIn  */}
                 <div className="divider text-gray-500">OR</div>
-
 
                 <div className="form-control">
                     <button 
@@ -273,7 +268,7 @@ const Register = () => {
                         className={` w-full btn bg-gray-700 border-gray-600 hover:bg-gray-600 text-white ${isLoading ? 'btn-disabled':''}`} 
                         disabled={isLoading} 
                     >
-                        {/*  SVG color adjusted for dark background */}
+                        
                         <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.343c-1.29 5.86-5.871 9.874-11.343 9.874-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-11.05 0-20 8.95-20 20s8.95 20 20 20c11.05 0 20-8.95 20-20c0-1.341-.138-2.65-.389-3.917z" /><path fill="#FF3D00" d="M6.306 14.693l6.571 4.819C14.655 15.108 18.9 12 24 12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-7.963 0-14.836 4.364-18.368 10.693z" /><path fill="#4CAF50" d="M24 44c5.108 0 9.771-1.638 13.313-4.481l-5.657-5.657C29.842 37.844 27.059 39 24 39c-5.448 0-10.129-4.32-11.343-9.874L6.306 33.307C9.838 39.636 16.709 44 24 44z" /><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.343c-.87 4.072-3.6 7.391-7.743 8.746-.232.084-.467.162-.702.234 3.498-3.045 5.735-7.464 5.735-12.28 0-1.341-.138-2.65-.389-3.917z" /></svg>
                         Sign up with Google (Gmail)
                     </button>        

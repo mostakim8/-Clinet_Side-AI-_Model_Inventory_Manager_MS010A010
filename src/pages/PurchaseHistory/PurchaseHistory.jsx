@@ -12,18 +12,15 @@ export const PurchaseHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    // use global app id
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     useEffect(() => {
         if (isAuthLoading) return;
-
-        // if user is not logged in, redirect to login page
+        
         if (!isLoggedIn) {
             navigate('/login');
             return;
         }
-
         const fetchPurchases = async () => {
             setIsLoading(true);
             setError(null);
@@ -35,7 +32,6 @@ export const PurchaseHistory = () => {
                 return;
             }
 
-            // --- 1. Fetch Purchase Records from Firestore ---
             const historyCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/purchases`);
             let fetchedPurchases = [];
             
@@ -46,7 +42,6 @@ export const PurchaseHistory = () => {
                 fetchedPurchases = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
-                    // Timestamp useable form
                     purchaseDate: doc.data().purchaseDate?.toDate ? doc.data().purchaseDate.toDate().toLocaleDateString() : 'N/A'
                 }));
                 
@@ -57,7 +52,6 @@ export const PurchaseHistory = () => {
                 return;
             }
 
-            // --- 2. Fetch Detailed Model Data from Backend Server ---
             try {
                 const modelDetailsPromises = fetchedPurchases.map(async (purchase) => {
                     const res = await fetch(`${SERVER_BASE_URL}/models/${purchase.modelId}`);
@@ -98,7 +92,7 @@ export const PurchaseHistory = () => {
         );
     }
     
-    if (error && !purchases.length) { // Error display only if no data at all
+    if (error && !purchases.length) { 
          return (
             <div className="p-10 min-h-screen bg-gray-50 text-center">
                 <h1 className="text-3xl font-bold text-red-600">Error</h1>
@@ -124,7 +118,6 @@ export const PurchaseHistory = () => {
                 My Purchase History
             </h1>
             
-            {/* Display Soft Error/Warning if model details failed */}
             {error && purchases.length > 0 && (
                  <div role="alert" className="alert alert-warning mb-6 shadow-md max-w-4xl mx-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.398 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -148,12 +141,11 @@ export const PurchaseHistory = () => {
                     <div className="overflow-x-auto">
                         <table className="table w-full bg-amber-50 ">
                             <thead>
-                                {/* table headline */}
                                 <tr className="bg-base-200 text-sm">
-                                    <th>Image</th> {/* NEW */}
+                                    <th>Image</th> 
                                     <th>Name</th>
-                                    <th>Framework</th> {/* NEW */}
-                                    <th>Use Case</th> {/* NEW */}
+                                    <th>Framework</th> 
+                                    <th>Use Case</th> 
                                     <th>Created By (Developer)</th>
                                     <th>Purchase Date</th>
                                     <th>View</th>
@@ -162,7 +154,7 @@ export const PurchaseHistory = () => {
                             <tbody>
                                 {purchases.map((p) => (
                                     <tr key={p.id}>
-                                        {/* Image (NEW) */}
+                                        {/* Image */}
                                         <td>
                                             <div className="avatar ">
                                                 <div className="mask mask-squircle w-12 h-12 bg-base-300">
@@ -180,21 +172,21 @@ export const PurchaseHistory = () => {
                                             {p.modelName}
                                         </td>
 
-                                        {/* Framework (NEW) */}
+                                        {/* Framework */}
                                         <td>
                                             <span className="badge badge-sm badge-outline badge-info truncate text-center">
                                                 {p.modelDetails?.framework || 'N/A'}
                                             </span>
                                         </td>
                                         
-                                        {/* Use Case (NEW) */}
+                                        {/* Use Case*/}
                                         <td>
                                             <span className='text-xs text-gray-600 max-w-[100px] inline-block truncate'>
                                                 {p.modelDetails?.useCase || 'N/A'}
                                             </span>
                                         </td>
                                         
-                                        {/* Created By (Developer Email) */}
+                                        {/* Developer Email) */}
                                         <td className="text-gray-600 text-xs font-mono">
                                             {p.developerEmail}
                                         </td>
@@ -204,7 +196,7 @@ export const PurchaseHistory = () => {
                                             {p.purchaseDate}
                                         </td>
                                         
-                                        {/* View Details Button (NEW) */}
+                                        {/* View ,Details ,Button*/}
                                         <td>
                                             <Link 
                                                 to={`/app/model/${p.modelId}`} 

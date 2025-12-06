@@ -1,7 +1,7 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import Navbar from "../component/shared/Navbar";
-import Footer from "../component/shared/Footer";
-import Slider from "../component/Slider/Slider"; // আপনার ফোল্ডার পাথ অনুযায়ী আপডেট করা হয়েছে
+import Navbar from "../components/shared/Navbar";
+import Footer from "../components/shared/Footer";
+import Slider from "../components/Slider/Slider"; 
 
 
 const MainLayout = () => {
@@ -14,8 +14,7 @@ const MainLayout = () => {
       
       {isHomePage && <Slider />}
 
-      <main className="flex-grow container mx-auto p-4">
-        {/* The Outlet renders the content of the current route (Home, Login, etc.) */}
+      <main className="grow container mx-auto p-4">
         <Outlet /> 
       </main>
       <Footer />

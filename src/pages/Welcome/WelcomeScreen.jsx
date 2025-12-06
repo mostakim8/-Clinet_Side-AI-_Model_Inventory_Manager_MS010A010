@@ -6,33 +6,13 @@ import AboutAIModelsSection from './AboutAIModelsSection';
 
 
 const WelcomeScreen = () => {
-    // const { user, loading } = useAuth(); 
     const navigate = useNavigate();
-
-    // useEffect(() => {
-    //     if (!loading && user) {
-    //         navigate('/app', { replace: true }); 
-    //     }
-    // }, [user, loading, navigate]);
-
 
     const handleGetStarted = () => {
         navigate('/login'); 
     };
     
 
-    // if (loading) {
-    //     return (
-    //         <div 
-    //             className="flex items-center justify-center min-h-screen w-full text-white"
-    //             style={{ backgroundColor: '#0c101d' }}
-    //         >
-    //             <span className="loading loading-dots loading-lg text-indigo-400"></span>
-    //             <p className="ml-4">Verifying user session...</p>
-    //         </div>
-    //     );
-    // }
-    
     return (
         <div 
             className="flex flex-col items-center justify-center min-h-screen text-white text-center"

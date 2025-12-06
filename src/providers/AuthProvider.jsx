@@ -1,5 +1,3 @@
-// client/src/providers/AuthProvider.jsx
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
     onAuthStateChanged, 
@@ -13,7 +11,6 @@ import {
 import { auth, db } from '../firebase/firebase.config'; 
 
 
-// create Auth Context 
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -28,9 +25,8 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     
-    // Initial Authentication and State Listener
     useEffect(() => {
-        // let isCancelled = false;
+        
         
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
                 setUser(currentUser);
@@ -47,10 +43,6 @@ export const AuthProvider = ({ children }) => {
                     console.error("Custom Token Sign-In Failed:", error);
                 }
             } 
-            
-            // if (!isCancelled) {
-            //     setIsLoading(false);
-            // }
         };
 
         if (isLoading) {
@@ -58,8 +50,7 @@ export const AuthProvider = ({ children }) => {
         }
         
         return () => {
-            //  isCancelled = true;
-             unsubscribe(); // Cleanup function
+             unsubscribe(); // 
         };
     }, []);
 
@@ -71,7 +62,6 @@ export const AuthProvider = ({ children }) => {
         return createUserWithEmailAndPassword(auth, email, password);
     };
 
-    // 🔑 ফিক্স: updateUserProfile এখন async এবং user.reload() ব্যবহার করছে
     const updateUserProfile = async (name, photoURL) => {
         const currentUser = auth.currentUser;
 

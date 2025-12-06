@@ -57,7 +57,7 @@ const Slider = () => {
                 {slidesData.map((slide) => (
                     <div 
                         key={slide.id} 
-                        className="w-full flex-shrink-0 p-12 text-center"
+                        className="w-full shrink-0 p-12 text-center"
                     >
                         {/*  slide element */}
                         <h1 className={`text-4xl font-extrabold mb-4 ${slide.color}`}>
@@ -89,8 +89,7 @@ const Slider = () => {
                 <ChevronRight size={24} />
             </button>
 
-            {/* Dot Indicators */}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-20">
+            <div className="flex justify-center absolute left-0 right-0 space-x-2 z-20 bottom-4">
                 {slidesData.map((_, index) => (
                     <button
                         key={index}

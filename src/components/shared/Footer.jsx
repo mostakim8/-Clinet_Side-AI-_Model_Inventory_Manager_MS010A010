@@ -5,15 +5,15 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="footer p-10 bg-neutral text-neutral-content mt-16 border-t border-gray-700">
+        <footer className="footer mt-16 p-10 bg-neutral text-neutral-content  border-t ">
             <div className="flex flex-col items-center  lg:flex-row lg:items-start lg:justify-between ">
 
-                {/* LEFT GROUP: Logo (Aside) + Services (Nav) */}
+                {/* Left side*/}
                 <div className="flex flex-col mx-20 items-center  lg:flex-row lg:items-start lg:text-left lg:gap-16 mb-8 lg:mb-0">
                     
-                    {/* 1. Logo (Aside) */}
+                    {/* Logo */}
                     <aside className="mb-8 lg:mb-0 text-center lg:text-left">
-                        {/* Simple Logo Placeholder */}
+            
                         <div className="text-3xl font-bold text-primary">AI Model Market</div>
                         <p className='mt-2'>
                             AI Model Inventory Manager.
@@ -26,9 +26,9 @@ const Footer = () => {
                 </div>
 
 
-                {/* RIGHT GROUP: Company (Nav) + Legal (Nav) */}
+                {/* Right side */}
                 <div className="flex flex-col items-center text-center lg:flex-row lg:items-start lg:text-left lg:gap-28">
-                    {/* 2. Services (Nav) */}
+                    {/*Services*/}
                     <nav className='text-center mb-8 lg:mb-0 text-gray-500'>
                         <h3 className="footer-title text-xl">Services</h3> 
 
@@ -36,7 +36,7 @@ const Footer = () => {
                         <Link to="/" className="link link-hover">Explore Models</Link><br />
                         <Link to="/purchase-history" className="link link-hover">Purchase History</Link>
                     </nav> 
-                    {/* 3. Company (Nav) */}
+                    {/*Company */}
                     <nav className="mb-8 lg:mb-0 text-center text-gray-500">
                         <h3 className="footer-title text-xl">Company</h3> 
                         <a href="#about" className="link link-hover">About Us</a> <br />
@@ -44,7 +44,7 @@ const Footer = () => {
                         <Link to="/register" className="link link-hover">Join as Developer</Link>
                     </nav> 
                     
-                    {/* 4. Legal (Nav) */}
+                    {/* Legal */}
                     <nav className='text-center text-gray-500'>
                         <h3 className="footer-title text-xl">Legal</h3> 
                         <a href="#" className="link link-hover">Terms of use</a> <br />
@@ -56,7 +56,7 @@ const Footer = () => {
 
                 </div>
             </div>
-             <p className="text-sm mt-4 mx-auto    ">
+             <p className="text-sm mt-4 mx-auto">
                             Copyright © {currentYear} - All rights reserved.
                         </p>
         </footer>

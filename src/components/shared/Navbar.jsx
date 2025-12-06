@@ -9,7 +9,6 @@ const Navbar = () => {
     const handleLogout = async () => {
         try {
             await logout(); 
-            // Successful sign out er por login page e redirect
             navigate('/login');
         } catch (error) {
             console.error("Logout Error:", error);
@@ -32,7 +31,7 @@ const Navbar = () => {
     return (
         <div className="navbar bg-base-300 shadow-lg sticky top-0 z-40">
             <div className="navbar-start">
-                {/* Mobile Dropdown (Hamburger Menu) */}
+                {/* Dropdown */}
                 <div className="dropdown">
                     <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
                         <svg xmlns="http://www.w3.0g/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
@@ -46,23 +45,23 @@ const Navbar = () => {
                 </Link>
             </div>
 
-            {/* Desktop Links */}
+            {/* Desktop*/}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 font-semibold">
                     {navLinks}
                 </ul>
             </div>
 
-            {/* User/Auth Actions */}
+        
             <div className="navbar-end">
                 {user ? (
-                    // Authenticated User Dropdown
+                    
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                             <div className="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                                {/* Email er prothom letter athoba user photo */}
+                                
                                 {user.photoURL ? (
-                                    <img src={user.photoURL} alt={user.displayName || user.email} className="rounded-full w-full h-full object-cover" />
+                                    <img src={user.photoURL} alt={user.displayName || user.email} className="w-full h-full  rounded-full object-cover" />
                                 ) : (
                                     <span className="text-xl">
                                         {user.displayName ? user.displayName[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')}
@@ -70,12 +69,12 @@ const Navbar = () => {
                                 )}
                             </div>
                         </div>
-                        <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52">
-                            {/* 1. User Name/Email (Profile Info) */}
+                        <ul tabIndex={0} className="w-52 menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box">
+                            {/* Profile Info */}
                             <li>
                                 <Link to="/app/profile-update" className="justify-between text-sm font-bold text-secondary">
 
-                                <div className='flex flex-col items-start leading tight pr-2 min-w-0'>
+                                <div className='flex flex-col items-start leading tight pr-2'>
                                   {/* user name */}
                                 {user.displayName && <span className=' truncate text-sm font-extrabold text-white'> {user.displayName}</span>}
 
@@ -89,14 +88,14 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             
-                            {/* 2. My Models Link (Only in Dropdown) */}
+                            {/* 2. My Models Dropdown*/}
                             <li>
                                 <Link to="/app/my-models">
                                     My Models
                                 </Link>
                             </li>
                             
-                            {/* 3. Purchase History Link (Only in Dropdown) */}
+                            {/* 3. Purchase History*/}
                             <li>
                                 <Link to="/app/purchase-history">
                                     Model Purchase History
@@ -105,7 +104,7 @@ const Navbar = () => {
                             
                             <div className="divider my-1 h-px bg-gray-200"></div> 
                             
-                            {/* 4. Logout Action */}
+                            {/* 4. Logout  */}
                             <li>
                                 <a onClick={handleLogout} className='text-error font-semibold'>
                                     Logout
@@ -114,7 +113,7 @@ const Navbar = () => {
                         </ul>
                     </div>
                 ) : (
-                    // Guest User Links
+                    // log in
                     <Link to="/login" className="btn btn-primary text-white hover:bg-primary-focus transition duration-300">
                         Login
                     </Link>

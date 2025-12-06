@@ -68,7 +68,6 @@ const ProfileUpdate = () => {
             <div className="w-full max-w-lg p-8 space-y-6 bg-base-100 rounded-lg shadow-xl border border-primary/20">
                 <h2 className="text-3xl font-bold text-center text-primary">Update Profile</h2>
                 
-                {/* Current User Info Card */}
                 <div className="flex flex-col items-center p-4 bg-base-200 rounded-lg border border-gray-700/50">
                     <img 
                         src={photoURL || 'https://i.ibb.co/6y4tH7v/default-profile.png'} 
@@ -79,7 +78,6 @@ const ProfileUpdate = () => {
                     <p className="text-sm text-gray-400">{user?.email}</p>
                 </div>
 
-                {/* Profile Update Form */}
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <div>
                         <label className="label">

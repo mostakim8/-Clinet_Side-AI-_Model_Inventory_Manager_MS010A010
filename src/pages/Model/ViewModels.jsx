@@ -3,29 +3,25 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async'; 
 import { useAuth } from '../../providers/AuthProvider.jsx'; 
 
-// Server base URL 
 const SERVER_BASE_URL = 'http://localhost:5001'; 
 
-// 🔑 NEW COMPONENT: ViewModels.jsx (Displays ALL models)
+
 export const ViewModels = () => {
     const { user } = useAuth(); 
 
-    // States for fetched data, loading status, and errors
+    
     const [models, setModels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    // State for the search query
     const [searchTerm, setSearchTerm] = useState(''); 
 
-    // Data fetching logic
     useEffect(() => {
         const fetchModels = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                
-                // Fetch all models from the backend API
+        
                 const response = await fetch(`${SERVER_BASE_URL}/models`);
                 
                 if (!response.ok) {
@@ -45,7 +41,6 @@ export const ViewModels = () => {
         fetchModels();
     }, []);
 
-    // --- Loading State Display ---
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
@@ -54,7 +49,7 @@ export const ViewModels = () => {
         );
     }
 
-    // --- Error State Display ---
+    // Error Display
     if (error) {
         return (
             <div role="alert" className="alert alert-error my-10 max-w-2xl mx-auto">
@@ -64,7 +59,6 @@ export const ViewModels = () => {
         );
     }
     
-    // --- Empty State Display ---
     if (models.length === 0) {
         return (
             <div className="text-center my-20 p-8 border border-gray-200 rounded-xl bg-white shadow-lg max-w-xl mx-auto">
@@ -77,16 +71,14 @@ export const ViewModels = () => {
         );
     }
 
-    // CORE LOGIC: Filter models based on the search term
+    
     const filteredModels = models.filter(model =>
         model.modelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (model.category && model.category.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // 🔑 CHANGE: Always display filteredModels (No 6-model limit)
     let displayModels = filteredModels; 
     
-    // --- Main Content Display ---
     return (
         <div className="py-4"> 
             <Helmet>
@@ -97,14 +89,13 @@ export const ViewModels = () => {
                 All Available AI Models
             </h1>
             
-            {/* H4 and Search Bar Container */}
             <div className="flex flex-col md:flex-row justify-between mb-10 px-4 bg-yellow-200/10 py-4 rounded-lg gap-4 md:gap-0">
-                {/* H4 Title (Left Side) - Updated text */}
+                
                 <h4 className="text-2xl font-semibold text-primary mb-4 md:mb-0">
                     Showing All {models.length} Models
                 </h4>
 
-                {/* Search Input Field (Right Side) */}
+                {/* Search Input */}
                 <div className="w-full md:w-96"> 
                     <label className="input input-bordered flex items-center gap-2 w-full input-md shadow-md bg-black-200 text-gray-400">
                         <input
@@ -117,9 +108,8 @@ export const ViewModels = () => {
                     </label>
                 </div>
             </div>
-            {/* END H4 and Search Bar Container */}
 
-            {/* Display message if no models match the search */}
+            {/* if no models match the search this msg */}
             {searchTerm.length > 0 && filteredModels.length === 0 && (
                 <div className="text-center my-10 p-8 border-2 border-dashed border-gray-300 rounded-xl bg-base-100 max-w-xl mx-auto">
                     <h3 className="text-2xl font-semibold text-gray-700">No Results Found 😔</h3>
@@ -135,7 +125,6 @@ export const ViewModels = () => {
                 </div>
             )}
 
-            {/* Model Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {displayModels.map((model) => {
                     return (
@@ -152,7 +141,7 @@ export const ViewModels = () => {
 
 
 
-                                {/* add framework */}
+                                {/*framework */}
 
                                 <div className=" space-y-1 text-sm text-gray-600">
 
@@ -163,13 +152,12 @@ export const ViewModels = () => {
                             <span className='badge badge-neutral'>{model.framework} 
                             </span>
                              </p>
-                             {/* usecase add  */}
+                             {/* use case   */}
                              <p className='flex justify-between items-center'>
                                         <span className='font-semibold'>Use Case:</span> 
                                         <span className='text-right max-w-[70%] truncate'>{model.useCase}</span>
                                     </p>
                                 </div>
-                                {/* <p className="text-2xl font-bold text-accent">${parseFloat(model.price).toFixed(2)}</p> */}
                                 
                                 <div className="card-actions justify-end mt-4">
                                     <Link 
@@ -184,8 +172,6 @@ export const ViewModels = () => {
                     );
                 })}
             </div>
-
-        {/*  Removed the 'Show All Models' button here as this page shows all models */}
         </div>
     );
 };
