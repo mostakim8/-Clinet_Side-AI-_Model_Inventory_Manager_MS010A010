@@ -5,11 +5,9 @@ import { useAuth } from '../../providers/AuthProvider.jsx';
 
 const SERVER_BASE_URL = 'http://localhost:5001'; 
 
-
-export const ViewModels = () => {
+export const AllModels = () => {
     const { user } = useAuth(); 
 
-    
     const [models, setModels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,7 +59,7 @@ export const ViewModels = () => {
     
     if (models.length === 0) {
         return (
-            <div className="text-center my-20 p-8 border border-gray-200 rounded-xl bg-white shadow-lg max-w-xl mx-auto">
+            <div className="text-center my-20 p-8 border border-gray-200 rounded-xl shadow-lg max-w-xl mx-auto">
                 <h2 className="text-3xl font-bold text-gray-700 mb-3">No Models Available</h2>
                 <p className="text-gray-500 mb-6">The inventory is currently empty. Please add a model to populate the list.</p>
                 <Link to="/add-model" className="btn btn-primary text-white">
@@ -89,19 +87,21 @@ export const ViewModels = () => {
                 All Available AI Models
             </h1>
             
-            <div className="flex flex-col md:flex-row justify-between mb-10 px-4 bg-yellow-200/10 py-4 rounded-lg gap-4 md:gap-0">
+            <div className="flex flex-col md:flex-row justify-between mb-10 px-4 py-4 rounded-lg gap-4 md:gap-0">
                 
                 <h4 className="text-2xl font-semibold text-primary mb-4 md:mb-0">
                     Showing All {models.length} Models
                 </h4>
 
                 {/* Search Input */}
-                <div className="w-full md:w-96"> 
-                    <label className="input input-bordered flex items-center gap-2 w-full input-md shadow-md bg-black-200 text-gray-400">
+                <div className="w-full md:w-96 "> 
+                    <label className="input input-bordered flex w-full items-center gap-2 input-md shadow-md bg-transparent border-base-content/20 text-base-content ">
                         <input
                             type="text"
                             placeholder="Search models by name or category..."
-                            className="grow"
+                            className="grow placeholder-base-900 
+                            text-gray-400
+                            dark:bg-transparent border-none  focus:outline-none "
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -111,8 +111,8 @@ export const ViewModels = () => {
 
             {/* if no models match the search this msg */}
             {searchTerm.length > 0 && filteredModels.length === 0 && (
-                <div className="text-center my-10 p-8 border-2 border-dashed border-gray-300 rounded-xl bg-base-100 max-w-xl mx-auto">
-                    <h3 className="text-2xl font-semibold text-gray-700">No Results Found 😔</h3>
+                <div className="text-center my-10 p-8 border-2 border-dashed border-gray-300 rounded-xl  max-w-xl mx-auto">
+                    <h3 className="text-2xl font-semibold text-gray-700">No Results Found</h3>
                     <p className="text-gray-500 mt-2">
                         We couldn't find any models matching **"{searchTerm}"** in the name or category.
                     </p>
@@ -128,18 +128,16 @@ export const ViewModels = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {displayModels.map((model) => {
                     return (
-                        <div key={model._id} className="card bg-white shadow-xl hover:shadow-2xl transition duration-300">
+                        <div key={model._id} className="card bg-gray-700/10 shadow-xl hover:shadow-2xl transition duration-300">
                             <figure className="h-48 overflow-hidden">
                                 <img 
                                     src={model.imageUrl || 'https://placehold.co/400x300/CCCCCC/666666?text=No+Image'} 
                                     alt={model.modelName} 
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover transition duration-500 hover:scale-110"
                                 />
                             </figure>
-                            <div className="card-body p-6">
-                                <h2 className="card-title text-xl text-gray-900">{model.modelName}</h2>
-
-
+                            <div className="card-body p-6 flex flex-col justify-between">
+                                <h2 className="card-title text-2xl font-extrabold truncate mb-2">{model.modelName}</h2>
 
                                 {/*framework */}
 
@@ -149,9 +147,10 @@ export const ViewModels = () => {
                             
                             <span className=' font-semibold'> Framework:
                             </span>
-                            <span className='badge badge-neutral'>{model.framework} 
+                            <span className='badge badge-neutral '>{model.framework} 
                             </span>
                              </p>
+
                              {/* use case   */}
                              <p className='flex justify-between items-center'>
                                         <span className='font-semibold'>Use Case:</span> 
@@ -162,7 +161,8 @@ export const ViewModels = () => {
                                 <div className="card-actions justify-end mt-4">
                                     <Link 
                                         to={`/app/model/${model._id}`} 
-                                        className="btn btn-primary btn-outline w-full"
+                                        className="btn btn-ghost bg-indigo-600 hover:bg-indigo-700 text-white 
+                                w-full font-bold shadow-lg shadow-indigo-500/50 transition duration-300"
                                     >
                                         View Details
                                     </Link>
@@ -176,4 +176,4 @@ export const ViewModels = () => {
     );
 };
 
-export default ViewModels;
+export default AllModels;

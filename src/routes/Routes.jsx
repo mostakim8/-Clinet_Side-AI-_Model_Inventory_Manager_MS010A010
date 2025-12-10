@@ -13,7 +13,7 @@ import {Login} from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import {Home} from "../pages/Home/Home";
-import ViewModels from "../pages/Model/ViewModels";
+
 import AddModel from "../pages/Model/AddModel";
 
 import MyModels from "../pages/Model/MyModels";
@@ -23,6 +23,7 @@ import {PurchaseHistory} from "../pages/PurchaseHistory/PurchaseHistory";
 import {ModelDetails} from "../pages/Model/ModelDetails";
 
 import ProfileUpdate from "../pages/ProfileUpdate/ProfileUpdate"; 
+import AllModels from "../pages/Model/AllModels";
 
 const SERVER_BASE_URL = 'http://localhost:5001';
 
@@ -57,9 +58,7 @@ const Routes = createBrowserRouter([
 
     {
         path: "/app",
-        element:
-             <PrivateRoute><MainLayout />
-             </PrivateRoute>,
+        element:<MainLayout />,
 
         errorElement: <ErrorPage />,
 
@@ -71,38 +70,54 @@ const Routes = createBrowserRouter([
 
             {
               path: "models", 
-              element:<ViewModels />
+              element: <AllModels/>
             },
            
             { 
                 path: "add-model", 
-                element: <AddModel />
+                element: <PrivateRoute>
+                    <AddModel />
+                    </PrivateRoute>
             },
 
             { 
                 path: "my-models", 
-                element: <MyModels /> 
+                element: <PrivateRoute>
+                    <MyModels /> 
+                    </PrivateRoute>
+                 
             },
 
             { 
                 path: "update-model/:id", 
-                element: <UpdateModel />,
+                element: 
+                <PrivateRoute>
+                    <UpdateModel />
+                    </PrivateRoute>,
                 loader: updateModelLoader, 
             },
 
             { 
                 path: "purchase-history",
-                element: <PurchaseHistory /> 
+                element: 
+                <PrivateRoute> 
+                    <PurchaseHistory />
+                    </PrivateRoute> 
             },
 
             { 
                 path: "model/:id", 
-                element: <ModelDetails /> 
+                element: <PrivateRoute>
+                    <ModelDetails />
+                </PrivateRoute>
+                 
             },
            
             { 
                 path: "profile-update",
-                element: <ProfileUpdate /> 
+                element: <PrivateRoute>
+                    <ProfileUpdate />
+                    </PrivateRoute> 
             },
         ],
     },

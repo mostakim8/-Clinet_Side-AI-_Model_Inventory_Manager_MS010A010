@@ -12,6 +12,7 @@ export const AddModel = () => {
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    // Floating Label Focus States
     const [modelNameFocused, setModelNameFocused] = useState(false);
     const [frameworkFocused, setFrameworkFocused] = useState(false);
     const [useCaseFocused, setUseCaseFocused] = useState(false);
@@ -24,12 +25,12 @@ export const AddModel = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
+        // Authentication logic (unchanged)
         let token = null;
 
         if (user && typeof user.getIdToken === 'function') {
             try {
                 token = await user.getIdToken(); 
-                // console.log("Fetched Token:", token); 
             } catch (error) {
                 console.error("Failed to fetch ID Token:", error);
                 toast.error("Failed to retrieve authentication token.");
@@ -63,6 +64,7 @@ export const AddModel = () => {
 
         const addToastId = toast.loading("Adding model to inventory...");
         
+        // API Call logic (unchanged)
         try {
             const response = await fetch(`${SERVER_BASE_URL}/models`, {
                 method: 'POST',
@@ -90,27 +92,40 @@ export const AddModel = () => {
             setIsSubmitting(false);
         }
     };
-
-
+    
+    // 🔑 ফিক্স ১: লেবেলের ব্যাকগ্রাউন্ড: bg-base-100 (থিম-ভিত্তিক)
+    const labelBgClass = " bg-base-100! ";
+    
+    // 🔑 ফিক্স ২: মেইন কার্ড ব্যাকগ্রাউন্ড এবং বর্ডারকে থিম-ভিত্তিক করা
     return (
-        <div className=" min-h-screen flex items-center " >
+        <div className=" min-h-screen flex items-center bg-base-200" >
 
-            <div className="w-full max-w-5xl justify-center p-4 rounded-xl bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] border border-transparent hover:border-indigo-80 transition duration-500 mx-auto">
+            <div className="w-full max-w-5xl justify-center p-4 rounded-xl
+
+            /*  ফিক্স ৩: ব্যাকগ্রাউন্ড bg-base-100, টেক্সট text-base-content */
+
+            bg-base-100 text-base-content 
+            
+            /* 🔑 ফিক্স ৪: কাস্টম শ্যাডো সরিয়ে ডেইজিইউআই শ্যাডো ব্যবহার করা হলো */
+            shadow-xl border border-base-300 transition duration-500 mx-auto ">
+
                 <h2 className="text-3xl font-bold text-center text-primary mb-2 mt-6">Add New AI Model</h2>
                 
                 <form 
                     onSubmit={handleAddModel} 
-                    className="card-body grid grid-cols-1 md:grid-cols-2 gap-8 p-10  mx-auto"
+                    className="card-body grid grid-cols-1 md:grid-cols-2 gap-8 p-10 mx-auto"
                 >
                     
                     {/* Model Name */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="modelName"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out   ${labelBgClass}
                             ${modelNameFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                /* 🔑 ফিক্স ৫: ফোকাসে text-primary বা text-secondary ব্যবহার করা হলো */
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                /* 🔑 ফিক্স ৬: ডিফল্ট টেক্সট text-base-content/70 ব্যবহার করা হলো */
+                                : 'text-base-content/70 opacity-80  rounded    mt-2 left-3' 
                             }`}
                         >
                             Model Name
@@ -119,7 +134,13 @@ export const AddModel = () => {
                             name="modelName" 
                             id="modelName"
                             placeholder="" 
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none "
+                            className={`input w-full bg-transparent border 
+                            /* 🔑 ফিক্স ৭: বর্ডার, টেক্সট এবং ফোকাস ইফেক্ট থিম-ভিত্তিক */
+                            border-base-300 text-base-content
+                            rounded-lg transition duration-300 
+                            focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none 
+                            placeholder-shown:pt-4`} // placeholder-shown:pt-4 যোগ করা হলো
+                            
                             onFocus={()=> setModelNameFocused(true)}
                             onBlur={(e)=> setModelNameFocused(e.target.value.trim() !== '')} 
                             required 
@@ -130,10 +151,10 @@ export const AddModel = () => {
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="framework"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${frameworkFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Framework
@@ -142,7 +163,7 @@ export const AddModel = () => {
                             name="framework" 
                             id="framework"
                             placeholder="" 
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none pt-4"
+                            className="input w-full bg-transparent border-base-300 text-base-content border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none placeholder-shown:pt-4"
                             onFocus={()=> setFrameworkFocused(true)}
                             onBlur={(e)=> setFrameworkFocused(e.target.value.trim() !== '')}
                             required 
@@ -153,10 +174,10 @@ export const AddModel = () => {
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="useCase"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${useCaseFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Use Case
@@ -165,7 +186,7 @@ export const AddModel = () => {
                             name="useCase" 
                             id="useCase"
                             placeholder="" 
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none pt-4"
+                            className="input w-full bg-transparent border-base-300 text-base-content border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none placeholder-shown:pt-4"
                             onFocus={()=> setUseCaseFocused(true)}
                             onBlur={(e)=> setUseCaseFocused(e.target.value.trim() !== '')}
                             required 
@@ -176,10 +197,10 @@ export const AddModel = () => {
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="dataset"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${datasetFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Dataset
@@ -188,7 +209,7 @@ export const AddModel = () => {
                             name="dataset" 
                             id="dataset"
                             placeholder="" 
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none pt-4"
+                            className="input w-full bg-transparent border-base-300 text-base-content border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none placeholder-shown:pt-4"
                             onFocus={()=> setDatasetFocused(true)}
                             onBlur={(e)=> setDatasetFocused(e.target.value.trim() !== '')}
                             required 
@@ -201,10 +222,10 @@ export const AddModel = () => {
                     <div className="form-control relative mb-2">
                         <label 
                             htmlFor="imageUrl"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${imageUrlFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Image URL (ImgBB Link)
@@ -214,7 +235,7 @@ export const AddModel = () => {
                             name="imageUrl" 
                             id="imageUrl"
                             placeholder=""
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none pt-4"
+                            className="input w-full bg-transparent border-base-300 text-base-content border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none placeholder-shown:pt-4"
                             onFocus={()=> setImageUrlFocused(true)}
                             onBlur={(e)=> setImageUrlFocused(e.target.value.trim() !== '')}
                             required 
@@ -223,25 +244,29 @@ export const AddModel = () => {
 
 
                     {/* Category */}
-                    <div className="form-control -mt-5 lg:mt-0">
-                        <label className="label"><span className="label-text font-semibold text-gray-400">Category</span></label>
-                        <select name="category" className="select select-bordered bg-transparent border-gray-700 text-gray-100 border rounded-lg lg:ms-3 w-full lg:w-91" required >
-                            <option value="" disabled selected>Select Model Category</option>
-                            <option value="LLM">Large Language Model (LLM)</option>
-                            <option value="Image Gen">Image Generation</option>
-                            <option value="Audio/Speech">Audio/Speech</option>
-                            <option value="Data Analysis">Data Analysis</option>
-                            <option value="Other">Other</option>
+                    <div className="form-control">
+                        {/* 🔑 ফিক্স ৮: লেবেলের রং text-base-content/70 */}
+                        <label className="label"><span className="label-text font-semibold text-base-content/70">Category</span></label>
+                        <select name="category" 
+                            /* 🔑 ফিক্স ৯: select ক্লাস ও রং ঠিক করা */
+                            className="select select-bordered bg-base-100 border-base-300 text-base-content rounded-lg w-full" 
+                            required >
+                            <option value="" disabled selected className='text-base-content'>Select Model Category</option>
+                            <option value="LLM" className='text-base-content'>Large Language Model (LLM)</option>
+                            <option value="Image Gen" className='text-base-content'>Image Generation</option>
+                            <option value="Audio/Speech" className='text-base-content'>Audio/Speech</option>
+                            <option value="Data Analysis" className='text-base-content'>Data Analysis</option>
+                            <option value="Other" className='text-base-content'>Other</option>
                         </select>
                     </div>
                     {/* Description */}
                     <div className="form-control md:col-span-2 relative mb-2">
                         <label 
                             htmlFor="description"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${descriptionFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Model Description
@@ -250,7 +275,8 @@ export const AddModel = () => {
                             name="description" 
                             id="description"
                             placeholder="" 
-                            className="textarea textarea-bordered h-32 w-full bg-transparent border-gray-700 text-gray-100 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none pt-8"
+                            /* 🔑 ফিক্স ১০: textarea ক্লাস ও রং ঠিক করা */
+                            className="textarea textarea-bordered h-32 w-full bg-transparent border-base-300 text-base-content border rounded-lg transition duration-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none pt-8"
                             onFocus={()=> setDescriptionFocused(true)}
                             onBlur={(e)=> setDescriptionFocused(e.target.value.trim() !== '')}
                             required
@@ -259,25 +285,28 @@ export const AddModel = () => {
 
                     {/* Developer Email */}
                     <div className="form-control md:col-span-1 ">
-                        <label className="label"><span className="label-text font-semibold text-gray-400">Developer Email (Read Only)</span></label>
+                        {/* 🔑 ফিক্স ১১: লেবেলের রং text-base-content/70 */}
+                        <label className="label"><span className="label-text font-semibold text-base-content/70">Developer Email (Read Only)</span></label>
                         <input 
                             type="email" 
                             name="developerEmail" 
                             defaultValue={user?.email || 'Loading...'} 
                             readOnly 
-                            className="input input-bordered bg-gray-700 text-gray-400 cursor-not-allowed border-gray-600 sm:w-full" 
+                            /* 🔑 ফিক্স ১২: readOnly ইনপুটের রং bg-base-300 এবং text-base-content/60 */
+                            className="input input-bordered bg-base-300 text-base-content/60 cursor-not-allowed border-base-300 sm:w-full" 
                         />
                     </div>
                     
  
-                    {/* Submit Button  */}
+                    {/* Submit Button (Full Width) */}
                     <div className="form-control mt-6 md:col-span-2">
                        <button type="submit"
-                             className={`w-full bg-linear-to-r from-indigo-500 to-blue-500 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] 
-                             ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-100 **cursor-pointer**'}`}
+                             /* 🔑 ফিক্স ১৩: Submit বাটনে ডেইজিইউআই btn-primary ক্লাস ব্যবহার করা হলো */
+                             className={`btn btn-primary text-primary-content w-full font-semibold py-3 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:scale-[1.01] 
+                             ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-100 cursor-pointer'}`}
                              disabled={isSubmitting}
                         >
-                             {isSubmitting ? 'Adding Model...' : 'Add Model'}
+                             {isSubmitting ? <span className="loading loading-spinner"></span> : 'Add Model'}
                         </button>
 
                     </div>

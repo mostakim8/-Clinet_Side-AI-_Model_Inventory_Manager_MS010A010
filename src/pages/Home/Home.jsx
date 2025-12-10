@@ -131,22 +131,35 @@ export const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {displayModels.map((model) => {
                         return (
-                            <div key={model._id} className="card bg-gray-500 shadow-xl hover:shadow-2xl transition duration-300">
+                            <div key={model._id} className="card bg-gray-700/10 shadow-xl hover:shadow-2xl transition duration-300">
                                 <figure className="h-48 overflow-hidden">
                                     <img 
                                         src={model.imageUrl || 'https://ibb.co/99kGZh1g?text=No+Image'} 
                                         alt={model.modelName} 
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition duration-500 hover:scale-110"
                                     />
                                 </figure>
-                                <div className="card-body p-6">
-                                    <h2 className="card-title text-xl text-white">{model.modelName}</h2>
-                                    <p className="text-2xl font-bold text-accent">{(model.framework)}</p>
-                                    
+                                <div className="card-body p-6 flex flex-col justify-between">
+                                    <h2 className="card-title text-2xl  font-extrabold truncate mb-2">{model.modelName}</h2>
+                                    <p className="text-sm font-semibold text-indigo-400">
+                                        Framework: <span className="text-lg font-bold text-pink-400">  {(model.framework)}</span>
+                                       
+                                        
+                                        </p>
+
+
+                                    {/* details button */}
                                     <div className="card-actions justify-end mt-4">
                                         <Link 
                                             to={`/app/model/${model._id}`} 
-                                            className="btn btn-primary btn-outline w-full"
+                                            className="btn 
+                                btn-ghost 
+                                bg-indigo-600 hover:bg-indigo-700 
+                                text-white 
+                                w-full 
+                                font-bold 
+                                shadow-lg shadow-indigo-500/50
+                                transition duration-300"
                                         >
                                             View Details
                                         </Link>

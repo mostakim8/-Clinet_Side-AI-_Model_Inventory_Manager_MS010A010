@@ -3,15 +3,21 @@ import { useState } from 'react';
 import { updateProfile, createUserWithEmailAndPassword,signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import auth from '../../firebase/firebase.config.js'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
 import SuccessModal from '../../components/PopUp/Register/SuccessModal.jsx'; 
 import RegisterLoading from '../../components/Loader/Register/RegisterLoading.jsx';
+import ConfirmModal from '../../components/PopUp/confirm modal/ConfirmModal.jsx'; 
 
 
 const Register = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false); 
+    
+    // কনফার্মেশন স্টেট
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    
+    // 🔑 পরিবর্তন: Google Sign-In এর জন্য ডেটা সংরক্ষণ করার নতুন স্টেট
+    const [googleAuthToConfirm, setGoogleAuthToConfirm] = useState(false); 
 
     const navigate = useNavigate();
     const googleProvider = new GoogleAuthProvider();
@@ -26,33 +32,54 @@ const Register = () => {
     const [regPhotoUrl, setRegPhotoUrl] = useState('');
     const [regPassword, setRegPassword] = useState('');
 
+
+    // 🔑 Google Sign-In এক্সিকিউশন ফাংশন
+    const executeGoogleSignIn = async () => {
+        setIsLoading(true);
+        setShowConfirmModal(false); // কনফার্ম মডাল বন্ধ
+        setError('');
+
+        try{
+            await signInWithPopup(auth, googleProvider);
+            
+            setIsLoading(false);
+            navigate('/app'); 
+            
+        } catch (err){
+            console.error("Google Sign-In Error:", err);
+            setError('Google Sign-In failed. Please try again.');
+            setIsLoading(false);
+        }
+    };
+
+
+    // 🔑 ইমেইল-পাসওয়ার্ড রেজিস্ট্রেশন (সরাসরি Firebase কল হবে, কোনো মডাল দেখাবে না)
     const handleRegister = async (e) => {
         e.preventDefault();
         setError(''); 
-        setIsLoading(true);
-        // Validation code
+        
         const formName = name; 
         const formEmail = regEmail;
         const formPassword = regPassword;
         const formPhotoURL = regPhotoUrl; 
         
-        //Password Validation 
+        // Password Validation 
         if (formPassword.length < 6) {
             setError('Password must be at least 6 characters long.');
-            setIsLoading(false);
             return;
         }
         if (!/[A-Z]/.test(formPassword)) {
             setError('Password must contain at least one capital letter.');
-            setIsLoading(false);
             return;
         }
         if (!/[!@#$%^&*()]/.test(formPassword)) {
             setError('Password must contain at least one special character, e.g., !@#$%^&*().');
-            setIsLoading(false);
             return;
         }
-        
+
+        // 🔑 রেজিস্ট্রেশন শুরু 
+        setIsLoading(true);
+
         try {
             // Create User
             const userCredential = await createUserWithEmailAndPassword(auth, formEmail, formPassword);
@@ -64,13 +91,8 @@ const Register = () => {
                 photoURL: formPhotoURL,
             });
             
-            // Log out 
-            // await signOut(auth);
-            
             setIsLoading(false); 
-            setShowSuccessModal(true); 
-            // navigate('/login'); 
-            
+            setShowSuccessModal(true); // সফলতার মডাল দেখানো
 
         } catch (err) {
             console.error(err);
@@ -79,12 +101,7 @@ const Register = () => {
             } else {
                 setError('Registration failed. Please check network and credentials.');
             }
-        }
-        finally{ 
-            
-            if (!showSuccessModal) { 
-                setIsLoading(false); 
-            }
+            setIsLoading(false); 
         }
     };
 
@@ -94,33 +111,36 @@ const Register = () => {
     };
 
 
-    //Google SignIn 
-    const handleGoogleSignIn=async()=>{
+    // 🔑 Google Sign-In (কনফার্মেশন মডাল দেখাবে)
+    const handleGoogleSignIn = () => {
         setError('');
-        setIsLoading(true); 
-        try{
-            await signInWithPopup(auth,googleProvider);
-            navigate('/app'); 
-            setIsLoading(false);
-        setShowSuccessModal(true);
-        }
-
-        catch (err){
-            console.error("Google Sign-In Error:",err);
-            setError('Google Sign-In failed. Please try again.');
-        }
-
-        finally{
-            setIsLoading(false);
-        }
+        // এখানে লোডিং শুরু হবে না, কনফার্মেশনের পরে হবে
+        setGoogleAuthToConfirm(true);
+        setShowConfirmModal(true);
     }
 
 
     return (
         
         <div className="relative flex items-center justify-center min-h-screen ">
+            
+            {/* 🔑 কনফার্মেশন মডাল (শুধুমাত্র Google Sign-In এর জন্য) */}
+            {showConfirmModal && googleAuthToConfirm && (
+                <ConfirmModal 
+                    // Google Sign-In এর ক্ষেত্রে, email ফিল্ডটি N/A অথবা 'Google Account' দেখাতে পারে
+                    email={'your Google Account'} 
+                    onConfirm={executeGoogleSignIn}
+                    onCancel={() => {
+                        setShowConfirmModal(false);
+                        setGoogleAuthToConfirm(false);
+                    }}
+                />
+            )}
+            
+            {/* লোডিং এবং সাকসেস মডাল */}
             {isLoading && <RegisterLoading/>}
             {showSuccessModal && <SuccessModal onRedirect={handleRedirectToLogin} onClose={handleRedirectToLogin} />}
+            
 
             <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
                 
@@ -198,7 +218,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/*  Photo URL Input */}
+                    {/* Photo URL Input */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="photoURL-input"
@@ -224,7 +244,7 @@ const Register = () => {
                         />
                     </div>
 
-                    {/*  Password Input */}
+                    {/* Password Input */}
                     <div className="form-control relative mb-2"> 
                         <label 
                             htmlFor="password-input"
@@ -261,18 +281,20 @@ const Register = () => {
                 {/* Google SignIn  */}
                 <div className="divider text-gray-500">OR</div>
 
-                <div className="form-control">
-                    <button 
-                        type="button" 
-                        onClick={handleGoogleSignIn}  
-                        className={` w-full btn bg-gray-700 border-gray-600 hover:bg-gray-600 text-white ${isLoading ? 'btn-disabled':''}`} 
-                        disabled={isLoading} 
-                    >
-                        
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.343c-1.29 5.86-5.871 9.874-11.343 9.874-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-11.05 0-20 8.95-20 20s8.95 20 20 20c11.05 0 20-8.95 20-20c0-1.341-.138-2.65-.389-3.917z" /><path fill="#FF3D00" d="M6.306 14.693l6.571 4.819C14.655 15.108 18.9 12 24 12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-7.963 0-14.836 4.364-18.368 10.693z" /><path fill="#4CAF50" d="M24 44c5.108 0 9.771-1.638 13.313-4.481l-5.657-5.657C29.842 37.844 27.059 39 24 39c-5.448 0-10.129-4.32-11.343-9.874L6.306 33.307C9.838 39.636 16.709 44 24 44z" /><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.343c-.87 4.072-3.6 7.391-7.743 8.746-.232.084-.467.162-.702.234 3.498-3.045 5.735-7.464 5.735-12.28 0-1.341-.138-2.65-.389-3.917z" /></svg>
-                        Sign up with Google (Gmail)
-                    </button>        
-                </div>
+              
+
+<div className="form-control">
+    <button 
+        type="button" 
+        onClick={handleGoogleSignIn}  
+        className={` w-full btn bg-gray-700 border-gray-600 hover:bg-gray-600 text-white ${isLoading || showSuccessModal ? 'btn-disabled':''}`} 
+        disabled={isLoading || showSuccessModal} 
+    >
+        
+        <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.343c-1.29 5.86-5.871 9.874-11.343 9.874-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-11.05 0-20 8.95-20 20s8.95 20 20 20c11.05 0 20-8.95 20-20c0-1.341-.138-2.65-.389-3.917z" /><path fill="#FF3D00" d="M6.306 14.693l6.571 4.819C14.655 15.108 18.9 12 24 12c3.059 0 5.842 1.156 7.96 3.034l5.657-5.657C34.047 5.795 29.28 4 24 4c-7.963 0-14.836 4.364-18.368 10.693z" /><path fill="#4CAF50" d="M24 44c5.108 0 9.771-1.638 13.313-4.481l-5.657-5.657C29.842 37.844 27.059 39 24 39c-5.448 0-10.129-4.32-11.343-9.874L6.306 33.307C9.838 39.636 16.709 44 24 44z" /><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.343c-.87 4.072-3.6 7.391-7.743 8.746-.232.084-.467.162-.702.234 3.498-3.045 5.735-7.464 5.735-12.28 0-1.341-.138-2.65-.389-3.917z" /></svg>
+        Sign up with Google (Gmail)
+    </button>        
+</div>
                 </form>
 
                 <div className="text-center p-4 pt-0">

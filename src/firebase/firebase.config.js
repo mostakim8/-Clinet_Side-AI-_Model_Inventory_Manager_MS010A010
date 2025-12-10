@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: "AIzaSyAuvfi_jgn3vYCZrDgIFfhim-G0J_xEm4Q",
   authDomain: "ai-model-inventory-manag-390aa.firebaseapp.com",

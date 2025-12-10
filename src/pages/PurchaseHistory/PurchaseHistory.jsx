@@ -12,7 +12,8 @@ export const PurchaseHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // ⚠️ এই ভেরিয়েবলটি আপনার রিয়েল __app_id দিয়ে প্রতিস্থাপিত হতে পারে
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
 
     useEffect(() => {
         if (isAuthLoading) return;
@@ -21,6 +22,7 @@ export const PurchaseHistory = () => {
             navigate('/login');
             return;
         }
+        
         const fetchPurchases = async () => {
             setIsLoading(true);
             setError(null);
@@ -39,11 +41,37 @@ export const PurchaseHistory = () => {
                 const q = query(historyCollectionRef); 
                 const querySnapshot = await getDocs(q);
                 
-                fetchedPurchases = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    purchaseDate: doc.data().purchaseDate?.toDate ? doc.data().purchaseDate.toDate().toLocaleDateString() : 'N/A'
-                }));
+                fetchedPurchases = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    let dateString = 'N/A';
+                    
+                    // 🔑 ফিক্স: ডেট পার্সিং লজিক
+                    if (data.purchaseDate && typeof data.purchaseDate.toDate === 'function') {
+                        dateString = data.purchaseDate.toDate().toLocaleDateString('en-US', {
+                             year: 'numeric',
+                             month: 'numeric',
+                             day: 'numeric',
+                         });
+                    } 
+                    else if (typeof data.purchaseDate === 'string') {
+                        const dateObj = new Date(data.purchaseDate);
+                        if (!isNaN(dateObj.getTime())) { 
+                             dateString = dateObj.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'numeric',
+                                day: 'numeric',
+                            });
+                        }
+                    } else if (data.purchaseDate instanceof Date) {
+                         dateString = data.purchaseDate.toLocaleDateString();
+                    }
+
+                    return {
+                        id: doc.id,
+                        ...data,
+                        purchaseDate: dateString 
+                    };
+                });
                 
             } catch (err) {
                 console.error("Error fetching purchase history:", err);
@@ -54,6 +82,10 @@ export const PurchaseHistory = () => {
 
             try {
                 const modelDetailsPromises = fetchedPurchases.map(async (purchase) => {
+                    if (!purchase.modelId) {
+                         return { ...purchase, modelDetails: { framework: 'N/A', useCase: 'N/A', imageUrl: '' } };
+                    }
+                    
                     const res = await fetch(`${SERVER_BASE_URL}/models/${purchase.modelId}`);
                     if (!res.ok) {
                         console.warn(`Model details not found for ID: ${purchase.modelId}`);
@@ -66,7 +98,12 @@ export const PurchaseHistory = () => {
 
                 const purchasesWithDetails = await Promise.all(modelDetailsPromises);
 
-                setPurchases(purchasesWithDetails.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))); 
+                setPurchases(purchasesWithDetails.sort((a, b) => {
+                    const dateA = new Date(a.purchaseDate);
+                    const dateB = new Date(b.purchaseDate);
+                    if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                    return dateB.getTime() - dateA.getTime();
+                })); 
 
             } catch (err) {
                  console.error("Error fetching model details:", err);
@@ -83,9 +120,10 @@ export const PurchaseHistory = () => {
 
     if (isAuthLoading || isLoading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-50">
+            /* 🔑 ফিক্স ১: লোডিং স্ক্রিনকে থিম-ভিত্তিক করা হলো */
+            <div className="flex justify-center items-center min-h-screen bg-base-200 text-base-content">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="ml-3 text-lg text-gray-700">
+                <p className="ml-3 text-lg">
                     {isAuthLoading ? 'Checking Authentication...' : 'Loading Purchase History...'}
                 </p>
             </div>
@@ -94,9 +132,10 @@ export const PurchaseHistory = () => {
     
     if (error && !purchases.length) { 
          return (
-            <div className="p-10 min-h-screen bg-gray-50 text-center">
-                <h1 className="text-3xl font-bold text-red-600">Error</h1>
-                <p className="mt-4 text-gray-700">{error}</p>
+            /* 🔑 ফিক্স ২: এরর স্ক্রিনকে থিম-ভিত্তিক করা হলো */
+            <div className="p-10 min-h-screen bg-base-200 text-base-content text-center">
+                <h1 className="text-3xl font-bold text-error">Error</h1>
+                <p className="mt-4 text-base-content/70">{error}</p>
                 <Link to="/" className="btn btn-primary mt-6">Go to Home</Link>
             </div>
         );
@@ -104,17 +143,19 @@ export const PurchaseHistory = () => {
 
     if (!isLoggedIn) {
          return (
-            <div className="p-10 min-h-screen bg-gray-50 text-center">
+            /* 🔑 ফিক্স ৩: এক্সেস ডিনায়েড স্ক্রিনকে থিম-ভিত্তিক করা হলো */
+            <div className="p-10 min-h-screen bg-base-200 text-base-content text-center">
                 <h1 className="text-3xl font-bold text-warning">Access Denied</h1>
-                <p className="mt-4 text-gray-700">Please log in to view your purchase history.</p>
+                <p className="mt-4 text-base-content/70">Please log in to view your purchase history.</p>
                 <Link to="/login" className="btn btn-warning mt-6">Log In Now</Link>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-4 md:p-10 min-h-screen">
-            <h1 className="text-4xl font-extrabold text-primary mb-8 border-b pb-4">
+        /* 🔑 ফিক্স ৪: মেইন কন্টেইনার ব্যাকগ্রাউন্ড bg-base-200 */
+        <div className="container mx-auto p-4 md:p-10 min-h-screen bg-base-200 text-base-content">
+            <h1 className="text-4xl font-extrabold text-primary mb-8 border-b border-base-300 pb-4">
                 My Purchase History
             </h1>
             
@@ -126,33 +167,38 @@ export const PurchaseHistory = () => {
             )}
 
 
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-                <div className="text-sm text-gray-600 mb-6 border-b pb-4">
+            {/* 🔑 ফিক্স ৫: মেইন ডিটেইলস কার্ড bg-base-100 */}
+            <div className="bg-base-100 p-6 rounded-xl shadow-lg">
+                {/* 🔑 ফিক্স ৬: টেক্সট রং text-base-content/70 */}
+                <div className="text-sm text-base-content/70 mb-6 border-b border-base-300 pb-4">
                     <p>Buyer Email: <strong className="text-primary">{user.email || 'N/A'}</strong></p>
                     <p>Total Purchases: <strong className="text-secondary font-bold">{purchases.length}</strong></p>
                 </div>
                 
                 {purchases.length === 0 ? (
                     <div className="text-center py-10">
-                        <p className="text-2xl text-gray-500">No purchases found yet!</p>
-                        <p className="mt-2 text-gray-400">Time to explore our <Link to="/" className="text-accent underline">AI Model Market</Link>.</p>
+                        <p className="text-2xl text-base-content/60">No purchases found yet!</p>
+                        <p className="mt-2 text-base-content/50">Time to explore our <Link to="/" className="text-accent underline">AI Model Market</Link>.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="table w-full bg-amber-50 ">
+                        {/* 🔑 ফিক্স ৭: টেবিল ক্লাস bg-base-100 (অথবা bg-transparent) ব্যবহার করা হলো */}
+                        <table className="table w-full">
                             <thead>
-                                <tr className="bg-base-200 text-sm">
+                                {/* 🔑 ফিক্স ৮: হেডার ব্যাকগ্রাউন্ড bg-base-300, টেক্সট text-base-content */}
+                                <tr className="bg-base-300 text-base-content text-sm">
                                     <th>Image</th> 
                                     <th>Name</th>
                                     <th>Framework</th> 
                                     <th>Use Case</th> 
                                     <th>Created By (Developer)</th>
                                     <th>Purchase Date</th>
-                                    <th>View</th>
+                                    <th>Details</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {purchases.map((p) => (
+                                    /* 🔑 ফিক্স ৯: বডি রোর ব্যাকগ্রাউন্ড (bg-base-100 দ্বারা নিয়ন্ত্রিত) */
                                     <tr key={p.id}>
                                         {/* Image */}
                                         <td>
@@ -168,7 +214,8 @@ export const PurchaseHistory = () => {
                                         </td>
                                         
                                         {/* Name */}
-                                        <td className="font-semibold text-gray-800 text-center">
+                                        {/* 🔑 ফিক্স ১০: টেক্সট রং text-base-content */}
+                                        <td className="font-semibold text-base-content text-center">
                                             {p.modelName}
                                         </td>
 
@@ -181,26 +228,29 @@ export const PurchaseHistory = () => {
                                         
                                         {/* Use Case*/}
                                         <td>
-                                            <span className='text-xs text-gray-600 max-w-[100px] inline-block truncate'>
+                                            {/* 🔑 ফিক্স ১১: টেক্সট রং text-base-content/70 */}
+                                            <span className='text-xs text-base-content/70 max-w-[100px] inline-block truncate'>
                                                 {p.modelDetails?.useCase || 'N/A'}
                                             </span>
                                         </td>
                                         
                                         {/* Developer Email) */}
-                                        <td className="text-gray-600 text-xs font-mono">
+                                        {/* 🔑 ফিক্স ১২: টেক্সট রং text-base-content/70 */}
+                                        <td className="text-base-content/70 text-xs font-mono">
                                             {p.developerEmail}
                                         </td>
                                         
-                                        {/* Purchase Date */}
-                                        <td className='text-sm font-medium text-gray-600 text-center'>
+                                       
+                                        {/* 🔑 ফিক্স ১৩: টেক্সট রং text-base-content/70 */}
+                                        <td className='text-sm font-medium text-base-content/70 text-center'>
                                             {p.purchaseDate}
                                         </td>
                                         
-                                        {/* View ,Details ,Button*/}
+
                                         <td>
                                             <Link 
                                                 to={`/app/model/${p.modelId}`} 
-                                                className="btn btn-xs btn-primary btn-outline truncate "
+                                                className="btn btn-xs btn-primary btn-outline truncate"
                                             >
                                                 View Details
                                             </Link>

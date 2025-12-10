@@ -9,7 +9,7 @@ const MainLayout = () => {
   const isHomePage = location.pathname === '/app'; 
 
   return (
-    <div className="flex flex-col min-h-screen dark:bg-gray-900 dark:text-white ">
+    <div className="flex flex-col min-h-screen transition-colors duration-500">
       <Navbar />
       
       {isHomePage && <Slider />}

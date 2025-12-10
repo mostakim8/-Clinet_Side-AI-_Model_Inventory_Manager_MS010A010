@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider'; 
+import ThemeToggle from '../themeToggle/ThemeToggle';
 
 const Navbar = () => {
     const { user, logout } = useAuth(); 
@@ -19,24 +20,40 @@ const Navbar = () => {
     const navLinks = (
         <>
             <li>
-                <Link to={user ? "/app" : "/"}>Home</Link>
+                {/* 🔑 ফিক্স: text-base-content (থিম-ভিত্তিক) */}
+                <Link to={user ? "/app" : "/"} className='text-base-content'>Home</Link>
             </li>
             
-            <li><Link to={user ? "/app/models" : "/models"}>View Models</Link></li> 
+            <li>
+                {/* 🔑 ফিক্স: text-base-content (থিম-ভিত্তিক) */}
+                <Link to={user ? "/app/models" : "/models"} className='text-base-content'>All Models</Link>
+            </li> 
             
-            {user && <li><Link to="/app/add-model">Add Model</Link></li>}
+            {user && <li>
+                {/* 🔑 ফিক্স: text-base-content (থিম-ভিত্তিক) */}
+                <Link to="/app/add-model" className='text-base-content'>Add Model</Link>
+            </li>}
         </>
     );
 
     return (
-        <div className="navbar bg-base-300 shadow-lg sticky top-0 z-40">
+        <div className="navbar 
+        /* 🔑 মেইন ফিক্স ১: bg-base-100 ব্যবহার করা হলো */
+        bg-base-100 
+        shadow-lg sticky top-0 px-8 z-40
+        /* ডার্ক মোডের শ্যাডো দরকার নেই, থিম হ্যান্ডেল করবে */
+        border-b border-base-300 transition duration-100">
+            
             <div className="navbar-start">
                 {/* Dropdown */}
                 <div className="dropdown">
-                    <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-                        <svg xmlns="http://www.w3.0g/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+                    <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden 
+                     /* 🔑 ফিক্স ২: হার্ডকোডেড রং সরিয়ে শুধু btn-ghost ও text-base-content */
+                     text-base-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-base-content" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
                     </div>
-                    <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box w-52">
+                    {/* 🔑 ফিক্স ৩: ড্রপডাউন মেনু ব্যাকগ্রাউন্ড bg-base-100 এবং টেক্সট text-base-content */}
+                    <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow font-semibold bg-base-100 text-base-content rounded-box w-52">
                         {navLinks}
                     </ul>
                 </div>
@@ -47,18 +64,24 @@ const Navbar = () => {
 
             {/* Desktop*/}
             <div className="navbar-center hidden lg:flex">
-                <ul className="menu menu-horizontal px-1 font-semibold">
+                {/* 🔑 ফিক্স ৪: মেনু text-base-content */}
+                <ul className="menu menu-horizontal px-1 font-semibold text-base-content">
                     {navLinks}
                 </ul>
             </div>
 
         
             <div className="navbar-end">
+                <ThemeToggle/>
                 {user ? (
                     
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                            <div className="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                            <div className="w-10 rounded-full 
+                            /* 🔑 ফিক্স ৫: bg-primary থাকুক, কিন্তু টেক্সট text-primary-content হোক */
+                            bg-primary 
+                            flex items-center justify-center
+                            text-primary-content font-bold">
                                 
                                 {user.photoURL ? (
                                     <img src={user.photoURL} alt={user.displayName || user.email} className="w-full h-full  rounded-full object-cover" />
@@ -69,17 +92,24 @@ const Navbar = () => {
                                 )}
                             </div>
                         </div>
-                        <ul tabIndex={0} className="w-52 menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-100 rounded-box">
+                        {/* 🔑 ফিক্স ৬: ইউজার ড্রপডাউন মেনু bg-base-100 এবং text-base-content */}
+                        <ul tabIndex={0} className="w-52 menu menu-sm dropdown-content mt-3 z-[1] p-2 
+                        bg-base-100 
+                        text-base-content 
+                        shadow 
+                        rounded-box">
                             {/* Profile Info */}
                             <li>
-                                <Link to="/app/profile-update" className="justify-between text-sm font-bold text-secondary">
+                                <Link to="/app/profile-update" className="justify-between text-sm font-bold text-base-content">
 
-                                <div className='flex flex-col items-start leading tight pr-2 -mr-14'>
+                                <div className='flex flex-col items-start leading tight pr-2 -mr-14 '>
                                   {/* user name */}
-                                {user.displayName && <span className=' truncate text-sm font-extrabold text-white'> {user.displayName}</span>}
+                                {/* 🔑 ফিক্স ৭: text-secondary থাকুক */}
+                                {user.displayName && <span className=' truncate text-sm font-extrabold text-secondary'> {user.displayName}</span>}
 
                                 {/* email  */}
-                                <span className={`truncate text-xs text-gray-400 ${!user.displayName && 'text-sm font-bold text-secondary'}`}>
+                                {/* 🔑 ফিক্স ৮: text-base-content/70 ব্যবহার করুন */}
+                                <span className={`truncate text-xs text-base-content/70 ${!user.displayName && 'text-sm font-bold text-secondary'}`}>
                                   {user.email}
                                 </span>
                                 </div>
@@ -102,7 +132,8 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             
-                            <div className="divider my-1 h-px bg-gray-200"></div> 
+                            {/* 🔑 ফিক্স ৯: ডিভাইডার bg-base-300 */}
+                            <div className="divider my-1 h-px bg-base-300"></div> 
                             
                             {/* 4. Logout  */}
                             <li>

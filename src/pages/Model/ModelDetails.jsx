@@ -6,7 +6,7 @@ import { getFirestore, collection, query, where, getDocs } from "firebase/firest
 
 const SERVER_BASE_URL = 'http://localhost:5001';
 
-// Mock Data Fallback
+// Mock Data Fallback (unchanged)
 const MOCK_MODEL = {
     _id: "60f71c4c8e7e1c0c8e7e1c0c",
     modelName: "Mock AI Data Model (Fallback)",
@@ -18,14 +18,15 @@ const MOCK_MODEL = {
 };
 
 
-//Custom Toast
+//Custom Toast (থিম-ভিত্তিক ক্লাস ব্যবহার করা হয়েছে)
 const ToastNotification = ({ show, message, type, onClose }) => {
     if (!show) return null;
     const colorClass = type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-success';
     
     return (
-        <div className="toast toast-top toast-center z-100">
-            <div className={`alert ${colorClass} shadow-lg text-white`}>
+        // 🔑 ফিক্স: text-white এর বদলে text-base-content/color-content ব্যবহার করুন
+        <div className="toast toast-top toast-center z-50">
+            <div className={`alert ${colorClass} shadow-lg`}>
                 <div>
                     <span className='font-semibold'>{message}</span>
                 </div>
@@ -49,7 +50,7 @@ export const ModelDetails = () => {
 
     const isLoggedIn = !!user;
 
-    // Firebase setup
+    // Firebase setup (unchanged)
     const auth = getAuth();
     const db = getFirestore();
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -65,16 +66,9 @@ export const ModelDetails = () => {
     const [isExpanded, setIsExpanded] = useState(false); 
     const DESCRIPTION_LIMIT = 200; 
 
-    const showToast = (message, type) => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message, type }), 4000);
-    };
-
-    const toggleDescription = () => {
-        setIsExpanded(!isExpanded);
-    };
-
-    // Purchase Status Logic
+    // ... (showToast, toggleDescription, checkPurchaseStatus, useEffect for fetching, useEffect for purchase status, handlePurchase, confirmPurchase are unchanged)
+    
+    // Purchase Status Logic (unchanged)
     const checkPurchaseStatus = async (modelId, buyerEmail) => {
         const userId = auth.currentUser?.uid; 
         if (!userId) {
@@ -130,6 +124,14 @@ export const ModelDetails = () => {
         }
     }, [isModelLoading, model, isAuthLoading, isLoggedIn, user?.email]); 
 
+    const showToast = (message, type) => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message, type }), 4000);
+    };
+
+    const toggleDescription = () => {
+        setIsExpanded(!isExpanded);
+    };
 
     const handlePurchase = async () => {
         if (!model) {
@@ -196,22 +198,25 @@ export const ModelDetails = () => {
         }
     };
 
+
     const isTotalLoading = isModelLoading || isAuthLoading;
     
     if (isTotalLoading) {
         return (
-            <div className="flex justify-center items-center min-h-[60vh] bg-gray-50">
+            /* 🔑 ফিক্স ৭: লোডিং স্ক্রিনকে থিম-ভিত্তিক করা হলো */
+            <div className="flex justify-center items-center min-h-[60vh] bg-base-200 text-base-content">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
-                <p className="ml-3 text-lg text-gray-700">{isAuthLoading ? 'Authenticating User...' : 'Loading Model Details...'}</p>
+                <p className="ml-3 text-lg">{isAuthLoading ? 'Authenticating User...' : 'Loading Model Details...'}</p>
             </div>
         );
     }
 
     if (!model) { 
         return (
-            <div className="text-center p-10 min-h-[60vh] bg-gray-50">
-                <h1 className="text-4xl text-red-600 font-bold">Error Loading Model</h1>
-                <p className="text-xl mt-4 text-gray-700">{error || 'Model data is empty.'}</p>
+            /* 🔑 ফিক্স ৮: এরর স্ক্রিনকে থিম-ভিত্তিক করা হলো */
+            <div className="text-center p-10 min-h-[60vh] bg-base-200 text-base-content">
+                <h1 className="text-4xl text-error font-bold">Error Loading Model</h1>
+                <p className="text-xl mt-4 text-base-content/80">{error || 'Model data is empty.'}</p>
                 <Link to="/" className="btn btn-primary mt-6">Back to Home</Link>
             </div>
         );
@@ -219,21 +224,21 @@ export const ModelDetails = () => {
     
     let buttonContent;
     let buttonDisabled = isPurchasing || user?.email === model.developerEmail || hasPurchased; 
-    let buttonClass = "btn-lg w-full text-white font-bold transition duration-300 ";
+    let buttonClass = "btn-lg w-full font-bold transition duration-300 ";
 
     if (!isLoggedIn) {
         // Logged Out
         buttonContent = 'Login to Purchase'; 
-        buttonClass += ' btn-warning';
+        buttonClass += ' btn-warning text-warning-content';
         buttonDisabled = false; 
     } else if (user?.email === model.developerEmail) {
         // Developer
         buttonContent = (
-            <span className="text-error font-bold">
+            <span className="font-bold">
                 Your Model (Cannot Buy)
             </span>
         );
-        buttonClass += ' btn-disabled ';
+        buttonClass += ' btn-disabled bg-base-300 text-base-content/60 border-none'; // ডার্ক মোডেও যেন কাজ করে
         buttonDisabled = true;
     } else if (hasPurchased) {
         //  Purchased
@@ -242,16 +247,16 @@ export const ModelDetails = () => {
                 <CheckCircleIcon className="mr-2 h-6 w-6" /> Licensed (View History)
             </span>
         );
-        buttonClass += ' btn-success';
+        buttonClass += ' btn-success text-success-content';
         buttonDisabled = true;
     } else if (isPurchasing) {
         buttonContent = 'Processing Transaction...';
-        buttonClass += ' btn-accent loading'; 
+        buttonClass += ' btn-accent loading text-accent-content'; 
         buttonDisabled = true;
     } else {
         // Buy 
         buttonContent = `Buy Now`;
-        buttonClass += ' btn-accent';
+        buttonClass += ' btn-accent text-accent-content';
         buttonDisabled = false;
     }
 
@@ -259,7 +264,8 @@ export const ModelDetails = () => {
     const finalButtonAction = isLoggedIn ? handlePurchase : () => navigate('/login');
 
     return (
-        <div className="container mx-auto p-4 md:p-10 min-h-screen">
+        /* 🔑 ফিক্স ১: মেইন কন্টেইনার ব্যাকগ্রাউন্ড bg-base-200 */
+        <div className="container mx-auto p-4 md:p-10 min-h-screen bg-base-200">
             <ToastNotification 
                 show={toast.show} 
                 message={toast.message} 
@@ -275,7 +281,8 @@ export const ModelDetails = () => {
                 </div>
             )}
             
-            <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+            {/* 🔑 ফিক্স ২: মেইন ডিটেইলস কার্ড ব্যাকগ্রাউন্ড bg-base-100 */}
+            <div className="bg-base-100 rounded-xl shadow-2xl overflow-hidden">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
                     
                     {/* Image and Primary Info  */}
@@ -291,24 +298,29 @@ export const ModelDetails = () => {
                                 }}
                             />
                         </figure>
-                        <div className="text-center py-4 bg-primary text-white rounded-lg shadow-xl">
-                            
+                        {/* 🔑 ফিক্স ৩: প্রাইমারি ইনফো বক্সেস থিম-ভিত্তিক রং ব্যবহার */}
+                        <div className="text-center py-4 bg-primary text-primary-content rounded-lg shadow-xl">
+                            <h2 className="text-2xl font-extrabold">Price on Request</h2> 
                             <p className="text-sm opacity-80 mt-1">One-time License Fee</p>
                         </div>
                     </div>
 
                     {/* Details and Description  */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 text-base-content"> {/* মেইন কন্টেন্ট টেক্সট */}
 
-                        <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{model.modelName}</h1>
+                        {/* 🔑 ফিক্স ৪: হেডিং টেক্সট text-base-content */}
+                        <h1 className="text-5xl font-extrabold mb-4">{model.modelName}</h1>
 
             {/* description section */}
-                        <div className="border-b pb-4 mb-4">
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">Description</h3>
+                        {/* 🔑 ফিক্স ৫: বর্ডার রং border-base-300 */}
+                        <div className="border-b border-base-300 pb-4 mb-4">
+                            {/* 🔑 ফিক্স ৬: সাবহেডিং টেক্সট text-base-content/80 */}
+                            <h3 className="text-xl font-semibold text-base-content/80 mb-2">Description</h3>
                             
                             {model.description && model.description.length > DESCRIPTION_LIMIT ? (
                                 <>
-                                    <p className="text-lg text-gray-600 whitespace-pre-wrap">
+                                    {/* 🔑 ফিক্স ৭: ডেসক্রিপশন টেক্সট text-base-content/70 */}
+                                    <p className="text-lg text-base-content/70 whitespace-pre-wrap">
                                         {isExpanded 
                                             ? model.description 
                                             : model.description.substring(0, DESCRIPTION_LIMIT) + '...'
@@ -316,65 +328,63 @@ export const ModelDetails = () => {
                                     </p>
                                     <button 
                                         onClick={toggleDescription}
-                                        className="text-primary hover:text-pink-500 font-bold mt-2 text-sm transition duration-200"
+                                        className="text-primary hover:text-secondary font-bold mt-2 text-sm transition duration-200"
                                     >
                                         {isExpanded ? 'Show Less' : 'See More'}
                                     </button>
                                 </>
                             ) : (
-                                <p className="text-lg text-gray-600 whitespace-pre-wrap">{model.description}</p>
+                                <p className="text-lg text-base-content/70 whitespace-pre-wrap">{model.description}</p>
                             )}
                         </div>
 
 
                         <div className="grid grid-cols-2  gap-4 mb-6">
 
-                {/* row 1 */}
+                {/* All Detail Boxes */}
+                {/* 🔑 ফিক্স ৮: সকল ডিটেইল বক্সেস bg-base-200 এবং text-base-content ব্যবহার */}
+                            
+                            {/* Use Case */}
                             <div className="bg-base-200 p-3 rounded-lg md:col-span-2">
-
-
-                                <p className="text-xs text-gray-500 font-medium">Use Case</p>
+                                <p className="text-xs text-base-content/60 font-medium">Use Case</p>
                                 <p className="text-lg font-semibold text-secondary wrap-break-words">{model.useCase || 'N/A'}</p>
-
-                                
                             </div>
-                    {/* data set */}
-                 <div className="bg-base-200 p-3 rounded-lg md:col-span-2">
-                                <p className="text-xs text-gray-500 font-medium">Dataset</p>
+                    
+                            {/* Dataset */}
+                            <div className="bg-base-200 p-3 rounded-lg md:col-span-2">
+                                <p className="text-xs text-base-content/60 font-medium">Dataset</p>
                                 <p className="text-lg font-semibold text-secondary wrap-break-words">{model.dataset || 'N/A'}</p>
                             </div>
 
-                    {/* row-2 */}
-                    {/* framework */}
+                            {/* Framework */}
                             <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Framework</p>
+                                <p className="text-xs text-base-content/60 font-medium">Framework</p>
                                 <p className="text-lg font-semibold text-secondary">{model.framework}</p>
                             </div>
 
-                    {/* Category*/}
-                        <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Category</p>
+                            {/* Category*/}
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-base-content/60 font-medium">Category</p>
                                 <p className="text-lg font-semibold text-secondary">{model.category}</p>
                             </div>
 
-                      {/* row-3 */}
-                      {/* purchase count section */}
+                            {/* Purchase Count */}
                             <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Purchase Count</p>
+                                <p className="text-xs text-base-content/60 font-medium">Purchase Count</p>
                                 <p className="text-lg font-semibold text-primary">{model.purchased || 0}</p>
                             </div>
 
-                       {/* Developer*/}
-                               <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Developer</p>
+                            {/* Developer*/}
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-base-content/60 font-medium">Developer</p>
                                 <p className="text-lg font-semibold text-secondary truncate">{model.developerEmail}</p>
                             </div>
 
-                        {/* row-4 */}
-                        {/* Model Id */}
-                             <div className="bg-base-200 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 font-medium">Model ID</p>
-                                <p className="text-sm font-mono text-gray-700 truncate">{model._id}</p>
+                            {/* Model Id */}
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="text-xs text-base-content/60 font-medium">Model ID</p>
+                                {/* 🔑 ফিক্স ৯: Model ID টেক্সট text-base-content/70 */}
+                                <p className="text-sm font-mono text-base-content/70 truncate">{model._id}</p>
                             </div>
                         </div>
 
@@ -389,12 +399,13 @@ export const ModelDetails = () => {
                             </button>
                             {/* purchased history */}
                             {hasPurchased && (
-                                <Link to="/app/purchase-history" className="btn btn-sm btn-link mt-2 block text-center">
+                                <Link to="/app/purchase-history" className="btn btn-sm btn-link mt-2 block text-center text-primary hover:text-secondary">
                                     Go to My Purchase History
                                 </Link>
                             )}
 
-                            <p className="text-sm text-gray-500 mt-3 text-center">
+                            {/* 🔑 ফিক্স ১০: ফুটনোট টেক্সট text-base-content/60 */}
+                            <p className="text-sm text-base-content/60 mt-3 text-center">
                                 {isLoggedIn ? 'Your purchase is secured by Firebase Authentication.' : 'Authentication is required for all transactions.'}
                             </p>
                         </div>
@@ -404,10 +415,11 @@ export const ModelDetails = () => {
             
             {/* Confirmation Modal */}
             {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Confirm Purchase?</h3>
-                        <p className="text-gray-600 mb-6">
+                /* 🔑 ফিক্স ১১: Modal ব্যাকগ্রাউন্ড এবং টেক্সট থিম-ভিত্তিক */
+                <div className="fixed inset-0 bg-base-content bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-base-100 p-8 rounded-xl shadow-2xl max-w-sm w-full text-base-content">
+                        <h3 className="text-2xl font-bold mb-4">Confirm Purchase?</h3>
+                        <p className="text-base-content/80 mb-6">
                             Are you sure you want to buy <strong>{model.modelName}</strong> 
                             ?
                         </p>

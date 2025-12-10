@@ -28,9 +28,10 @@ const MyModels = () => {
     const ToastNotification = () => {
         if (!toast.show) return null;
         
+        // ডেইজিইউআই/থিম ক্লাস ব্যবহার
         const colorClass = toast.type === 'success' 
-            ? 'bg-green-500 text-white' 
-            : 'bg-red-500 text-white';
+            ? 'alert-success text-success-content' 
+            : 'alert-error text-error-content';
 
         return (
             <div className="toast toast-end z-50">
@@ -71,7 +72,7 @@ const MyModels = () => {
         } else {
             setLoading(false);
         }
-    }, [user?.email]); // user.email change হলে  re-run হবে
+    }, [user?.email]); 
 
     // --- Delete Handler (Token Included) ---
     const handleDelete = async (id, name) => { 
@@ -102,7 +103,6 @@ const MyModels = () => {
 
                 if (!res.ok) {
                     const err = await res.json();
-                    // "401" or "403" check
                     if (res.status === 401 || res.status === 403) {
                          throw new Error(err.message || 'Unauthorized access. Token issue or ownership mismatch.');
                     }
@@ -140,43 +140,45 @@ const MyModels = () => {
         return <div className="text-center py-20 text-xl text-error">Please log in to view your models.</div>;
     }
 
-    return (
-        <div className="py-10 px-4 md:px-0">
+    return ( // <--- এইখান থেকে return শুরু
+        <div className="py-10 px-4 md:px-0 ">
             <ToastNotification /> 
             
             <h1 className="text-4xl font-bold text-center mb-10 text-secondary">
                 My Model Inventory ({myModels.length})
             </h1>
-            <p className="text-center text-sm text-gray-500 mb-6">
+            <p className="text-center text-sm text-base-content/70 mb-6">
                 Showing models created by: <span className='font-semibold text-primary'>{user?.email || 'N/A'}</span>
             </p>
             
             {myModels.length === 0 ? (
-                <p className="text-center text-xl text-gray-500">You haven’t added any models yet.
+                <p className="text-center text-xl text-base-content/70">You haven’t added any models yet.
                  <Link to="/app/add-model" className='link link-primary font-bold'> Add One Now</Link>।
                 </p>
             ) : (
-                <div className="overflow-x-auto max-w-7xl mx-auto bg-base-200 p-4 rounded-xl shadow-lg">
-                    <table className="table w-full">
+                <div className="overflow-x-auto max-w-7xl mx-auto bg-base-100 p-4 rounded-xl shadow-lg border border-rounded">
+                    
+                    <table className="table w-full table-zebra"> 
                         
                         <thead>
-                            <tr className='text-md text-primary'>
+                            <tr className='text-md text-base-content border-b-2 border-base-300'>
                                 <th>Image</th>
                                 <th>Name</th>
                                 <th>Framework</th> 
                                 <th>Use Case</th> 
                                 <th>Created By</th> 
-                                <th>Management</th> 
+                                <th>Details</th> 
                             </tr>
                         </thead>
 
                         <tbody>
                             {myModels.map(model => (
-                                <tr key={model._id} className='hover:bg-base-300 transition duration-150'>
+                                <tr key={model._id} className='hover:bg-base-200 transition duration-150'>
+                                    
                                     {/* Image */}
                                     <td>
                                         <div className="avatar">
-                                            <div className="mask mask-squircle w-12 h-12 bg-base-300">
+                                            <div className="mask mask-squircle w-12 h-12 bg-base-300"> 
                                                 <img 
                                                     src={model.imageUrl || `https://placehold.co/100x100/CCCCCC/666666?text=No+Image`} 
                                                     alt={`Image of ${model.modelName}`} 
@@ -185,36 +187,37 @@ const MyModels = () => {
                                             </div>
                                         </div>
                                     </td>
+                                    
                                     {/* Name */}
-                                    <td className='truncate font-bold text-gray-700'>{model.modelName}</td>
+                                    <td className='truncate font-bold text-base-content'>{model.modelName}</td>
                                     
                                     {/* Framework */}
                                     <td>
-                                        <span className="badge badge-lg badge-outline badge-primary  truncate">
+                                        <span className="badge badge-lg badge-outline badge-primary truncate">
                                             {model.framework || model.category || 'N/A'}
                                         </span>
                                     </td>
                                     
                                     {/* Use Case */}
                                     <td>
-                                        <span className='text-sm text-gray-600 max-w-[150px] inline-block truncate'>
+                                        <span className='text-sm text-base-content/70 max-w-[150px] inline-block truncate'>
                                             {model.useCase || 'General AI'}
                                         </span>
                                     </td>
                                     
-                                    {/*Developer Email*/}
+                                    {/* Developer Email */}
                                     <td>
-                                        <span className='text-xs font-mono text-gray-500 max-w-[100px] inline-block truncate'>
+                                        <span className='text-xs font-mono text-base-content/60 max-w-[100px] inline-block truncate'>
                                             {model.developerEmail}
                                         </span>
                                     </td>
 
-                                    {/* View, Edit, Delete */}
+                                    {/* Details Buttons */}
                                     <td className="flex flex-col space-y-1">
                                         
                                         <Link 
                                             to={`/app/model/${model._id}`} 
-                                            className={`btn btn-sm btn-success text-white transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
+                                            className={`btn btn-sm btn-success text-success-content transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
                                             disabled={isDeleting}
                                         >
                                             View Details
@@ -223,7 +226,7 @@ const MyModels = () => {
                                         {/* Edit Button */}
                                         <Link 
                                             to={`/app/update-model/${model._id}`} 
-                                            className={`btn btn-info btn-sm text-white hover:opacity-80 transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
+                                            className={`btn btn-info btn-sm text-info-content hover:opacity-80 transition duration-300 ${isDeleting ? 'btn-disabled' : ''}`}
                                             disabled={isDeleting}
                                         >
                                             Edit
@@ -232,7 +235,7 @@ const MyModels = () => {
                                         {/* Delete button*/}
                                         <button 
                                             onClick={() => handleDelete(model._id, model.modelName)}
-                                            className={`btn btn-error btn-sm text-white hover:opacity-80 transition duration-300 
+                                            className={`btn btn-error btn-sm text-error-content hover:opacity-80 transition duration-300 
                                                 ${isDeleting && deletingId === model._id ? 'loading' : ''}
                                             `}
                                             disabled={isDeleting}
@@ -247,7 +250,7 @@ const MyModels = () => {
                 </div>
             )}
         </div>
-    );
-};
+    ); // <--- এইখানে return শেষ
+}; // <--- এইখানে ফাংশন শেষ
 
 export default MyModels;

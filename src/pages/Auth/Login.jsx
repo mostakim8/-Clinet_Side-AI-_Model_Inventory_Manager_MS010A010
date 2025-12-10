@@ -4,8 +4,6 @@ import { useAuth } from '../../providers/AuthProvider.jsx';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'; 
 import RegistorBtn from '../../components/buttons/RegistorBtn.jsx';
 import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
-// import ParticlesBackground from '../../component/Form Img/ParticlesBackground.jsx'; 
-
 
 
 export const Login = () => {
@@ -26,34 +24,39 @@ export const Login = () => {
 
         try {
             await login(email, password);
-            alertUser('Login successful! Redirecting...', 'success');
             navigate('/app'); 
             
         } catch (err) {
             console.error(err);
             let errorMessage = "An unknown error occurred.";
-            if (err.code === 'auth/invalid-email') errorMessage = 'Invalid email address.';
-            else if (err.code === 'auth/wrong-password') errorMessage = 'Invalid password.';
+            if (err.code === 'auth/invalid-email' || err.code === 'auth/wrong-password') errorMessage = 'Invalid email address or password.';
             else if (err.code === 'auth/user-not-found') errorMessage = 'No user found with this email.';
             else if (err.code === 'auth/weak-password') errorMessage = 'Password should be at least 6 characters.';
+            else if (err.code === 'auth/too-many-requests') errorMessage = 'Access temporarily blocked due to too many failed attempts.';
 
             setError(errorMessage);
-            alertUser(errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }
     };
     
-    const alertUser = (message, type) => {
-        console.log(`[${type.toUpperCase()}] ${message}`); 
-    };
-
+    const labelBgClass = " bg-base-100! ";
 
     return (
-        <div className="relative flex items-center justify-center min-h-screen ">
-            {/* <ParticlesBackground /> */}
+        <div className="relative flex items-center justify-center min-h-screen bg-base-200">
             {isLoading && <LogInLoader />}
-            <div className="card w-full max-w-md p-6 rounded-lg bg-[#131a2e] text-white shadow-[0_0_20px_rgba(109,40,217,0.7)] hover:shadow-[0_0_30px_rgba(99,102,241,0.9)]  border border-transparent hover:border-indigo-80 transition duration-500 z-10">
+            
+            {/* 🔑 মেইন ফিক্স: শ্যাডো পরিবর্তন */}
+            <div className="card w-full max-w-md p-6 rounded-lg bg-base-100 text-base-content 
+            
+            /* 1. লাইট মোড শ্যাডো: হালকা এবং ক্লাসিক */
+            shadow-xl shadow-base-content/10 
+            
+            /* 2. ডার্ক মোড শ্যাডো: আপনার চাওয়া কাস্টম বেগুনি শ্যাডো */
+            dark:shadow-[0_0_25px_rgba(109,40,217,0.7)] 
+            dark:hover:shadow-[0_0_35px_rgba(99,102,241,0.9)]
+            
+            border border-base-300 transition duration-500 z-10">
                 
                 <form className="card-body" onSubmit={handleSubmit}>
                     
@@ -71,7 +74,7 @@ export const Login = () => {
                     </h2>
                 
                     {error && (
-                        <div role="alert" className="alert alert-error mb-4">
+                        <div role="alert" className="alert alert-error mb-4 text-error-content">
                             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <span>{error}</span>
                         </div>
@@ -81,10 +84,10 @@ export const Login = () => {
                     <div className="form-control relative mb-6"> 
                         <label 
                             htmlFor="email-input"
-                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]  
+                            className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${email || emailFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Email Address
@@ -94,11 +97,13 @@ export const Login = () => {
                             id="email-input"
                             type="email"
                             placeholder="" 
-                            className="input w-full bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none" 
+                            className="input w-full bg-transparent border border-base-300 text-base-content 
+                            placeholder-base-content/50 rounded-lg transition duration-300 
+                            focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" 
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             onFocus={()=> setEmailFocused(true)}
-                            onBlur={()=> setEmailFocused(false)}
+                            onBlur={()=> setEmailFocused(email.trim() !== '')}
                             required
                         />
                     </div>
@@ -106,10 +111,10 @@ export const Login = () => {
                     {/* Password Input */}
                     <div className="form-control relative mb-2">
                         <label  htmlFor="password-input"
-                        className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out bg-[#131a2e]
+                        className={`absolute top-0 pointer-events-none font-bold transition-all duration-300 ease-in-out ${labelBgClass}
                             ${password || passwordFocused
-                                ? 'text-pink-500 -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
-                                : 'text-gray-400 opacity-80 pt-4 left-3' 
+                                ? 'text-primary -translate-y-1/2 opacity-100 px-1  z-10 left-3 text-[11px] rounded' 
+                                : 'text-base-content/70 opacity-80 mt-2 left-3' 
                             }`}
                         >
                             Password
@@ -119,34 +124,42 @@ export const Login = () => {
                           id='password-input'
                           type="password"
                           placeholder=""
-                          className="input w-full pt-2 pb-2 bg-transparent border-gray-700 text-gray-100 placeholder-gray-500 border rounded-lg transition duration-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 focus:outline-none"
+                          className="input w-full pt-2 pb-2 bg-transparent border border-base-300 text-base-content 
+                          placeholder-base-content/50 rounded-lg transition duration-300 
+                          focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none"
 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onFocus={() => setPasswordFocused(true)}
-                            onBlur={() => setPasswordFocused(false)}
+                            onBlur={() => setPasswordFocused(password.trim() !== '')}
                             required
                         />
                     </div>
 
-                    <div className="form-control mt-1 mx-auto">
+                    {/* Log In Button (Full Width, Center) */}
+                    <div className="form-control mt-1"> 
                         <button 
                             type="submit" 
-                            className={`btn btn-primary text-white font-bold rounded-xl ${isLoading ? 'btn-disabled' : ''}`}
+                            className={`btn btn-primary text-primary-content w-full font-bold rounded-xl ${isLoading ? 'btn-disabled' : ''}`}
                             disabled={isLoading}
                         >
-                            Log In
+                            {isLoading ? <span className="loading loading-spinner"></span> : 'Log In'}
                         </button>
                     </div>
                     
                     <div className="text-center mt-4">
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-base-content/70 mb-4">
                             Don't have an account? 
                         </p>
 
-                         <RegistorBtn onClick={()=>navigate ('/register')} 
-                             > Registration
-                        </RegistorBtn>  
+                         {/* Registration Button (Center) */}
+                         <div className="w-full flex justify-center">
+                            <RegistorBtn onClick={()=>navigate ('/register')} 
+                                className="group" 
+                                > 
+                                Registration
+                            </RegistorBtn> 
+                         </div> 
                     </div>
                 </form>
             </div>
