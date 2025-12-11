@@ -8,7 +8,7 @@ import RegisterLoading from '../../components/Loader/Register/RegisterLoading.js
 import ConfirmModal from '../../components/PopUp/confirm modal/ConfirmModal.jsx'; 
 
 
-const Register = () => {
+const register = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false); 
@@ -298,4 +298,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default register;

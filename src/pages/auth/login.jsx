@@ -6,7 +6,7 @@ import RegistorBtn from '../../components/buttons/RegistorBtn.jsx';
 import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
 
 
-export const Login = () => {
+export const login = () => {
     const [email, setEmail] = useState('');
     const [emailFocused, setEmailFocused] = useState(false);
     const [password, setPassword] = useState('');
