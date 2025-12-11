@@ -48,11 +48,11 @@ const Routes = createBrowserRouter([
     },
     
     { 
-        path: "login", 
+        path: "/login", 
         element: < login/> 
     },
     { 
-        path: "register", 
+        path: "/register", 
         element: <register/> 
     },
 
