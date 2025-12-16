@@ -5,7 +5,7 @@ import { Home } from './pages/Home/Home.jsx';
 import { ModelDetails } from './pages/Model/ModelDetails.jsx';
 import { PurchaseHistory } from './pages/User/PurchaseHistory.jsx';
 import { login } from './pages/auth/Login.jsx'; 
-import register from './pages/auth/Register.jsx';
+import register from './pages/auth/register.jsx';
 
 const App = () => {
   return (

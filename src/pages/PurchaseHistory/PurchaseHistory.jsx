@@ -12,7 +12,7 @@ export const PurchaseHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
+    // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
 
     useEffect(() => {
         if (isAuthLoading) return;
@@ -33,7 +33,7 @@ export const PurchaseHistory = () => {
                 return;
             }
 
-            const historyCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/purchases`);
+            // const historyCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/purchases`);
             let fetchedPurchases = [];
             
             try {
