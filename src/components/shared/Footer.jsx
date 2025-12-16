@@ -33,9 +33,9 @@ const Footer = () => {
                     <nav className='text-center mb-8 lg:mb-0 text-base-content/70'>
                         <h3 className="footer-title text-xl text-base-content">Services</h3> 
 
-                        <Link to="/app/add-model" className="link link-hover no-underline">Upload Model</Link><br />
-                        <Link to="/app/all-model" className="link link-hover no-underline">Explore Models</Link><br />
-                        <Link to="/purchase-history" className="link link-hover no-underline">Purchase History</Link>
+                        <Link to="#" className="link link-hover no-underline">Upload Model</Link><br />
+                        <Link to="#" className="link link-hover no-underline">Explore Models</Link><br />
+                        <Link to="#" className="link link-hover no-underline">Purchase History</Link>
                     </nav> 
                     
                     {/*Company */}
