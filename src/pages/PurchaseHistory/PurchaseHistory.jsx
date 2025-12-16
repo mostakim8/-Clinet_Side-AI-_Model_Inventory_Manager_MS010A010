@@ -34,6 +34,8 @@ export const PurchaseHistory = () => {
             }
 
             // const historyCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/purchases`);
+
+            const historyCollectionRef=collection (db, `purchase/${userId}/history`)
             let fetchedPurchases = [];
             
             try {
