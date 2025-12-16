@@ -12,14 +12,14 @@ const ConfirmModal = ({ email, onConfirm, onCancel }) => {
                 
 
                 <div className="flex justify-end gap-3 mt-4">
-                    {/* ৩Cancel Button */}
+                    {/* Cancel Button */}
                     <button 
                         className="btn btn-sm btn-outline" 
                         onClick={onCancel}
                     >
                         Cancel
                     </button>
-                    {/* ৪. Confirm Button */}
+                    {/* Confirm Button */}
                     <button 
                         className="btn btn-sm btn-primary" 
                         onClick={onConfirm}

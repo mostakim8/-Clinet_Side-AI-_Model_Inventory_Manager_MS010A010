@@ -6,8 +6,7 @@ import RegistorBtn from '../../components/buttons/RegistorBtn.jsx';
 import LogInLoader from '../../components/Loader/LogInLoader/LogInLoader.jsx';
 
 
-// পরিবর্তন ১: export const login থেকে const Login এ পরিবর্তন
-const Login = () => { // ফাংশনের নাম বড় হাতের
+const Login = () => {
     const [email, setEmail] = useState('');
     const [emailFocused, setEmailFocused] = useState(false);
     const [password, setPassword] = useState('');
@@ -158,5 +157,4 @@ const Login = () => { // ফাংশনের নাম বড় হাতে�
     );
 };
 
-// পরিবর্তন ২: Default Export যোগ করুন
 export default Login;

@@ -120,7 +120,6 @@ export const PurchaseHistory = () => {
 
     if (isAuthLoading || isLoading) {
         return (
-            /* 🔑 ফিক্স ১: লোডিং স্ক্রিনকে থিম-ভিত্তিক করা হলো */
             <div className="flex justify-center items-center min-h-screen bg-base-200 text-base-content">
                 <span className="loading loading-spinner loading-lg text-primary"></span>
                 <p className="ml-3 text-lg">

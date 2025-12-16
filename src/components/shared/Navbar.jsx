@@ -51,7 +51,7 @@ const Navbar = () => {
                 </Link>
             </div>
 
-            {/* Desktop*/}
+            {/* large display*/}
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1 font-semibold text-base-content">
                     {navLinks}
