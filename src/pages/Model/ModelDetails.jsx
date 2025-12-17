@@ -17,10 +17,10 @@ export const ModelDetails = () => {
     const [isModelLoading, setIsModelLoading] = useState(true); 
     const [hasPurchased, setHasPurchased] = useState(false); 
     const [isPurchasing, setIsPurchasing] = useState(false);
-    const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // পারচেজ স্ট্যাটাস চেক (একবার কেনা হয়েছে কি না)
+    // পারচেজ স্ট্যাটাস চেক
     const checkPurchaseStatus = async (modelId) => {
         const userId = auth.currentUser?.uid; 
         if (!userId) return;
@@ -29,23 +29,22 @@ export const ModelDetails = () => {
             const q = query(purchasesRef, where('modelId', '==', modelId));
             const querySnapshot = await getDocs(q);
             setHasPurchased(!querySnapshot.empty);
-        } catch (error) { console.error("Purchase check failed:", error); }
+        } catch (error) { console.error("Error checking status:", error); }
     };
 
     useEffect(() => {
         setIsModelLoading(true);
         fetch(`${SERVER_BASE_URL}/models/${id}`)
             .then(res => res.json())
-            .then(data => setModel(data))
+            .then(data => {
+                setModel(data);
+                if (user) checkPurchaseStatus(data._id);
+            })
             .catch(err => console.error("Fetch error:", err))
             .finally(() => setIsModelLoading(false));
-    }, [id]);
+    }, [id, user]);
 
-    useEffect(() => {
-        if (!isModelLoading && model && user) checkPurchaseStatus(model._id);
-    }, [isModelLoading, model, user]);
-
-    const handlePurchase = () => {
+    const handlePurchaseClick = () => {
         if (!user) return navigate('/login');
         if (hasPurchased) return;
         setShowConfirmModal(true);
@@ -68,16 +67,16 @@ export const ModelDetails = () => {
             });
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.message || "Failed");
+                throw new Error(errData.message || "Purchase failed");
             }
             setHasPurchased(true);
-            setToast({ show: true, message: 'Purchase Successful!', type: 'success' });
+            setToast({ show: true, message: 'Successfully Purchased!', type: 'success' });
         } catch (err) { 
             setToast({ show: true, message: err.message, type: 'error' }); 
         } finally { setIsPurchasing(false); }
     };
 
-    if (isModelLoading || isAuthLoading) return <div className="flex justify-center items-center min-h-[60vh]"><span className="loading loading-spinner loading-lg"></span></div>;
+    if (isModelLoading || isAuthLoading) return <div className="flex justify-center items-center min-h-[60vh]"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
     if (!model) return <div className="text-center p-10">Model not found.</div>;
 
     const isOwner = user?.email === model.developerEmail;
@@ -88,72 +87,90 @@ export const ModelDetails = () => {
                 <div className="toast toast-top toast-center z-50">
                     <div className={`alert alert-${toast.type} shadow-lg`}>
                         <span>{toast.message}</span>
-                        <button onClick={() => setToast({show: false})} className="btn btn-xs">✕</button>
+                        <button onClick={() => setToast({show: false})} className="btn btn-xs btn-ghost">✕</button>
                     </div>
                 </div>
             )}
 
-            <div className="bg-base-100 rounded-xl shadow-2xl overflow-hidden">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
-                    {/* Image Section */}
+            <div className="bg-base-100 rounded-2xl shadow-xl overflow-hidden border border-base-300">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
+                    
+                    {/* বাম পাশ: ইমেজ এবং ডেভেলপার ইনফো */}
                     <div className="lg:col-span-1">
-                        <figure className="aspect-video rounded-lg overflow-hidden shadow-lg mb-6">
-                            <img src={model.imageUrl} className="w-full h-full object-cover" alt={model.modelName} />
-                        </figure>
-                        <div className="bg-primary text-primary-content p-4 rounded-lg text-center font-bold text-xl">
-                            One-time Access Fee
+                        <img src={model.imageUrl} className="w-full rounded-xl shadow-md mb-6 aspect-video object-cover" alt={model.modelName} />
+                        
+                        <div className="bg-base-200 p-5 rounded-xl border border-primary/10">
+                            <h3 className="text-xs font-bold opacity-50 uppercase mb-3">Developer Details</h3>
+                            <div className="flex items-center gap-3">
+                                <div className="avatar placeholder">
+                                    <div className="bg-neutral text-neutral-content rounded-full w-10">
+                                        <span>{model.developerName?.charAt(0) || 'D'}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="font-bold text-base-content">{model.developerName || "Unknown"}</p>
+                                    <p className="text-xs opacity-60 truncate w-40">{model.developerEmail}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Details Section (All Assignment Fields) */}
+                    {/* ডান পাশ: মডেল ডিটেইলস */}
                     <div className="lg:col-span-2">
-                        <h1 className="text-4xl font-extrabold mb-4">{model.modelName}</h1>
-                        <p className="text-lg opacity-70 mb-6">{model.description}</p>
+                        <div className="flex justify-between items-start mb-4">
+                            <h1 className="text-3xl md:text-5xl font-black text-base-content">{model.modelName}</h1>
+                            <div className="badge badge-primary p-3">ID: {model._id.slice(-6)}</div>
+                        </div>
+                        
+                        <p className="text-lg opacity-80 leading-relaxed mb-8">{model.description}</p>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                            <div className="bg-base-200 p-4 rounded-lg">
-                                <span className="text-xs font-bold opacity-50 uppercase">Use Case</span>
-                                <p className="text-lg font-semibold text-secondary">{model.useCase || "N/A"}</p>
+                            <div className="p-4 bg-base-200 rounded-lg border-l-4 border-primary">
+                                <span className="text-xs font-bold opacity-50 block mb-1">USE CASE</span>
+                                <p className="font-semibold">{model.useCase || "General AI"}</p>
                             </div>
-                            <div className="bg-base-200 p-4 rounded-lg">
-                                <span className="text-xs font-bold opacity-50 uppercase">Dataset</span>
-                                <p className="text-lg font-semibold text-secondary">{model.dataset || "N/A"}</p>
+                            <div className="p-4 bg-base-200 rounded-lg border-l-4 border-secondary">
+                                <span className="text-xs font-bold opacity-50 block mb-1">DATASET</span>
+                                <p className="font-semibold">{model.dataset || "Proprietary"}</p>
                             </div>
-                            <div className="bg-base-200 p-4 rounded-lg">
-                                <span className="text-xs font-bold opacity-50 uppercase">Framework</span>
-                                <p className="text-lg font-semibold text-secondary">{model.framework || model.category}</p>
+                            <div className="p-4 bg-base-200 rounded-lg border-l-4 border-accent">
+                                <span className="text-xs font-bold opacity-50 block mb-1">FRAMEWORK</span>
+                                <p className="font-semibold">{model.framework || model.category}</p>
                             </div>
-                            <div className="bg-base-200 p-4 rounded-lg">
-                                <span className="text-xs font-bold opacity-50 uppercase">Purchased Count</span>
-                                <p className="text-lg font-semibold text-primary">{model.purchased || 0}</p>
+                            <div className="p-4 bg-base-200 rounded-lg border-l-4 border-info">
+                                <span className="text-xs font-bold opacity-50 block mb-1">TOTAL SALES</span>
+                                <p className="font-semibold text-primary">{model.purchased} Units</p>
                             </div>
                         </div>
 
-                        {/* Button logic */}
-                        <button 
-                            onClick={handlePurchase} 
-                            disabled={hasPurchased || isPurchasing || isOwner}
-                            className={`btn btn-lg w-full font-bold ${hasPurchased ? 'btn-success text-white' : 'btn-accent'}`}
-                        >
-                            {isOwner ? "Owner (Cannot Purchase)" : hasPurchased ? "✓ Purchased" : isPurchasing ? "Processing..." : "Buy Now"}
-                        </button>
-                        
-                        {hasPurchased && (
-                            <Link to="/app/purchase-history" className="btn btn-link w-full mt-2">View My Purchase History</Link>
-                        )}
+                        <div className="flex flex-col gap-3">
+                            <button 
+                                onClick={handlePurchaseClick} 
+                                disabled={hasPurchased || isPurchasing || isOwner}
+                                className={`btn btn-lg w-full font-bold shadow-lg ${hasPurchased ? 'btn-success text-white' : 'btn-primary'}`}
+                            >
+                                {isOwner ? "Owner (Action Disabled)" : hasPurchased ? "✓ You already own this" : isPurchasing ? "Processing..." : "Buy Now"}
+                            </button>
+                            
+                            {hasPurchased && (
+                                <Link to="/app/purchase-history" className="btn btn-link text-center">
+                                    Check Purchase History
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Confirm Modal */}
+            {/* কনফার্মেশন মডাল */}
             {showConfirmModal && (
                 <div className="modal modal-open">
-                    <div className="modal-box">
-                        <h3 className="font-bold text-lg text-center">Confirm Your Purchase</h3>
-                        <p className="py-4 text-center">Are you sure you want to purchase <b>{model.modelName}</b>? This action cannot be undone.</p>
-                        <div className="modal-action flex justify-center gap-4">
-                            <button onClick={() => setShowConfirmModal(false)} className="btn btn-outline">Cancel</button>
-                            <button onClick={confirmPurchase} className="btn btn-primary">Yes, Purchase</button>
+                    <div className="modal-box bg-base-100 shadow-2xl">
+                        <h3 className="font-bold text-xl mb-4">Finalize Purchase</h3>
+                        <p className="text-base-content/70">Are you sure you want to add <strong>{model.modelName}</strong> to your inventory?</p>
+                        <div className="modal-action">
+                            <button onClick={() => setShowConfirmModal(false)} className="btn btn-ghost">Cancel</button>
+                            <button onClick={confirmPurchase} className="btn btn-primary px-8">Confirm</button>
                         </div>
                     </div>
                 </div>
