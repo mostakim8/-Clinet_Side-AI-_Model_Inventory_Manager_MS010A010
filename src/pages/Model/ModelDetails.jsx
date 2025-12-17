@@ -20,7 +20,7 @@ export const ModelDetails = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // পারচেজ স্ট্যাটাস চেক
+    // check purchase
     const checkPurchaseStatus = async (modelId) => {
         const userId = auth.currentUser?.uid; 
         if (!userId) return;
@@ -95,7 +95,7 @@ export const ModelDetails = () => {
             <div className="bg-base-100 rounded-2xl shadow-xl overflow-hidden border border-base-300">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10">
                     
-                    {/* বাম পাশ: ইমেজ এবং ডেভেলপার ইনফো */}
+                    {/* left side : img and developer  */}
                     <div className="lg:col-span-1">
                         <img src={model.imageUrl} className="w-full rounded-xl shadow-md mb-6 aspect-video object-cover" alt={model.modelName} />
                         
@@ -115,7 +115,7 @@ export const ModelDetails = () => {
                         </div>
                     </div>
 
-                    {/* ডান পাশ: মডেল ডিটেইলস */}
+                    {/* right side: models details */}
                     <div className="lg:col-span-2">
                         <div className="flex justify-between items-start mb-4">
                             <h1 className="text-3xl md:text-5xl font-black text-base-content">{model.modelName}</h1>
@@ -162,7 +162,7 @@ export const ModelDetails = () => {
                 </div>
             </div>
 
-            {/* কনফার্মেশন মডাল */}
+            {/* confirmation modal */}
             {showConfirmModal && (
                 <div className="modal modal-open">
                     <div className="modal-box bg-base-100 shadow-2xl">

@@ -106,7 +106,7 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             
-                            {/* 3. Purchase History*/}
+                            {/* Purchase History*/}
                             <li>
                                 <Link to="/app/purchase-history">
                                     Model Purchase History
@@ -115,7 +115,7 @@ const Navbar = () => {
                             
                             <div className="divider my-1 h-px bg-base-300"></div> 
                             
-                            {/* 4. Logout  */}
+                            {/*  Logout  */}
                             <li>
                                 <a onClick={handleLogout} className='text-error font-semibold'>
                                     Logout
